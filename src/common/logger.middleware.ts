@@ -23,6 +23,8 @@ export class AppLoggerMiddleware implements NestMiddleware {
       const { statusCode } = response;
       if (statusCode >= 500) {
         this.logger.error(`${method} ~ ${url} ~ ${statusCode} | ${ip}`);
+      } else if (statusCode >= 400) {
+        this.logger.warn(`${method} ~ ${url} ~ ${statusCode} | ${ip}`);
       } else {
         this.logger.log(`${method} ~ ${url} ~ ${statusCode} | ${ip}`);
       }
