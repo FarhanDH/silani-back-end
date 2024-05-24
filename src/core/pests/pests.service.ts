@@ -10,8 +10,10 @@ export class PestsService {
 
   async create(createPestDto: CreatePestDto) {
     this.logger.debug(`PestsService.create(${JSON.stringify(createPestDto)})`);
-    return await this.drizzleService.db.insert(pests).values(createPestDto);
-    // .returning();
+    return await this.drizzleService.db
+      .insert(pests)
+      .values(createPestDto)
+      .returning();
   }
 
   async getAll() {
