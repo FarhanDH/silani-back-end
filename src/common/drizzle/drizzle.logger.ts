@@ -1,7 +1,8 @@
-import { Logger } from 'drizzle-orm';
+import { Logger } from '@nestjs/common';
 
-export class DrizzleLogger implements Logger {
+export class DrizzleLogger {
+  private readonly logger: Logger = new Logger('Drizzle');
   logQuery(query: string, params: unknown[]): void {
-    console.log({ query, params });
+    this.logger.debug({ query, params });
   }
 }
