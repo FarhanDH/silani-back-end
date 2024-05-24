@@ -8,15 +8,13 @@ import * as schema from './schema/index';
 @Injectable()
 export class DrizzleService {
   public readonly db: NeonHttpDatabase<typeof schema>;
-  // private readonly logger: Logger = new Logger(DrizzleService.name);
 
   constructor() {
     this.db = this.getDb();
   }
 
   private getDb(): NeonHttpDatabase<typeof schema> {
-    // neonConfig.fetchConnectionCache = true;
-    const sql = neon(config().database.url!);
+    const sql = neon(config().database.url);
     return drizzle(sql, { schema, logger: new DrizzleLogger() });
   }
 }
