@@ -3,6 +3,9 @@ import { ConfigModule } from '@nestjs/config';
 import { config } from './config';
 import { DrizzleModule } from './drizzle/drizzle.module';
 import { AppLoggerMiddleware } from './logger.middleware';
+import { DrizzleModule } from './drizzle/drizzle.module';
+import { ConfigModule } from '@nestjs/config';
+import { config } from './config';
 
 @Module({
   imports: [
