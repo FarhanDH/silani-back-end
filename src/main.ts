@@ -12,6 +12,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.setGlobalPrefix('api');
+
   const logger: Logger = new Logger('Info');
   const port: number = config().serverPort || 3000;
   await app
