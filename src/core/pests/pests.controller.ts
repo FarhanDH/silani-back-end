@@ -1,15 +1,38 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseFilePipeBuilder,
+  Post,
+  Put,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CreatePestDto } from './dto/create-pest.dto';
 import { PestsService } from './pests.service';
 import { UpdatePestDto } from './dto/update-pest.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('pests')
 export class PestsController {
   constructor(private readonly pestsService: PestsService) {}
 
   @Post()
-  async create(@Body() createPestDto: CreatePestDto) {
-    const data = await this.pestsService.create(createPestDto);
+  @UseInterceptors(FileInterceptor('image'))
+  async create(
+    @Body() createPestDto: CreatePestDto,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /(jpg|jpeg|png|svg|tiff|webp)$/,
+        })
+        .addMaxSizeValidator({ maxSize: 1000000 })
+        .build({ fileIsRequired: true }),
+    )
+    image: Express.Multer.File,
+  ) {
+    const data = await this.pestsService.create(createPestDto, image);
     return {
       data,
     };

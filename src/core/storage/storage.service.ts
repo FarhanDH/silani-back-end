@@ -17,6 +17,15 @@ export class StorageService {
   });
   private readonly logger: Logger = new Logger(StorageService.name);
 
+  /**
+   * Uploads a file to the configured storage.
+   *
+   * @param key - The key/filename to use for the uploaded object.
+   * @param body - The file contents to upload.
+   * @param mimeType - The MIME type of the file contents.
+   * @returns An object containing the HTTP status code and the URL of the uploaded object.
+   * @throws An error if the upload fails.
+   */
   async upload(key: string, body: Buffer, mimeType: string) {
     const upload = new PutObjectCommand({
       Bucket: config().storage.bucket,
