@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseFilePipeBuilder,
@@ -52,6 +53,14 @@ export class PestsController {
     @Body() updatePestDto: UpdatePestDto,
   ) {
     const data = await this.pestsService.update(pestId, updatePestDto);
+    return {
+      data,
+    };
+  }
+
+  @Delete(':pestId')
+  async delete(@Param('pestId') pestId: string) {
+    const data = await this.pestsService.delete(pestId);
     return {
       data,
     };

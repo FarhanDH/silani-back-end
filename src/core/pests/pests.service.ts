@@ -72,6 +72,14 @@ export class PestsService {
       .then((data) => data[0]);
   }
 
+  async delete(pestId: string) {
+    this.logger.debug(`PestsService.delete(${pestId})`);
+    return await this.drizzleService.db
+      .delete(pests)
+      .where(eq(pests.id, pestId))
+      .returning();
+  }
+
   async findByName(name: string) {
     this.logger.debug(`PestsService.findByName(${name})`);
     return await this.drizzleService.db.query.pests.findFirst({
