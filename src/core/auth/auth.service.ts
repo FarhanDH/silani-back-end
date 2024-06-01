@@ -21,7 +21,10 @@ export class AuthService {
     const user = await this.validateUser(loginDto);
     // check if user contain password
     if (loginDto.password) {
-      return await this.generateToken(user);
+      const userData = await this.generateToken(user);
+      delete userData.user.googleId;
+      delete userData.user.facebookId;
+      return userData;
     }
 
     // if user not contain password, check if user is google user
