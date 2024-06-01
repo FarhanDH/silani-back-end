@@ -26,7 +26,11 @@ export class AuthService {
 
     // if user not contain password, check if user is google user
     if (!loginDto.password && loginDto.googleId === user?.googleId) {
-      return await this.generateToken(user);
+      const userData = await this.generateToken(user);
+
+      // remove facebookId field from userData
+      delete userData.user.facebookId;
+      return userData;
     }
   }
 
