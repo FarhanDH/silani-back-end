@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, Logger } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { DrizzleService } from '~/common/drizzle/drizzle.service';
 import { pests } from '~/common/drizzle/schema';
 import { CreatePestDto } from './dto/create-pest.dto';
@@ -60,10 +65,25 @@ export class PestsService {
     return await this.drizzleService.db.query.pests.findMany();
   }
 
+  async getById(pestId: string) {
+    this.logger.debug(`PestsService.getById(${pestId})`);
+    return await this.drizzleService.db.query.pests.findFirst({
+      where: (pests, { eq }) => eq(pests.id, pestId),
+    });
+  }
+
   async update(pestId: string, updatePestDto: UpdatePestDto) {
     this.logger.debug(
       `PestsService.update(${pestId}, ${JSON.stringify(updatePestDto)})`,
     );
+
+    // is pest exist
+    const pest = await this.getById(pestId);
+    if (!pest) {
+      this.logger.error(`Pest ${pestId} does not exist`);
+      throw new NotFoundException(`Pest ${pestId} does not exist`);
+    }
+
     return await this.drizzleService.db
       .update(pests)
       .set({ name: updatePestDto.name, updatedAt: new Date() })
@@ -74,10 +94,25 @@ export class PestsService {
 
   async delete(pestId: string) {
     this.logger.debug(`PestsService.delete(${pestId})`);
-    return await this.drizzleService.db
-      .delete(pests)
-      .where(eq(pests.id, pestId))
-      .returning();
+
+    // is pest exist
+    const pest = await this.getById(pestId);
+    if (!pest) {
+      this.logger.error(`Pest ${pestId} does not exist`);
+      throw new NotFoundException(`Pest ${pestId} does not exist`);
+    }
+
+    Promise.all([
+      await this.drizzleService.db
+        .delete(pests)
+        .where(eq(pests.id, pestId))
+        .returning(),
+      await this.storageService.delete(pest.imageKey),
+    ]);
+
+    return {
+      message: 'Pest deleted succesfully!',
+    };
   }
 
   async findByName(name: string) {

@@ -35,7 +35,7 @@ export class PestsController {
   ) {
     const data = await this.pestsService.create(createPestDto, image);
     return {
-      data,
+      data: data[0],
     };
   }
 
