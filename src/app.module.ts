@@ -6,9 +6,17 @@ import { PestsModule } from './core/pests/pests.module';
 import { StorageModule } from './core/storage/storage.module';
 import { AuthModule } from './core/auth/auth.module';
 import { UsersModule } from './core/users/users.module';
+import { PlantCategoriesModule } from './core/plant-categories/plant-categories.module';
 
 @Module({
-  imports: [CommonModule, PestsModule, StorageModule, AuthModule, UsersModule],
+  imports: [
+    CommonModule,
+    PestsModule,
+    StorageModule,
+    AuthModule,
+    UsersModule,
+    PlantCategoriesModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
