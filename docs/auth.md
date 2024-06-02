@@ -77,7 +77,6 @@ Request Body :
   "fullName": "Joko Pirang",
   "email": "joko@mail.com",
   "avatarUrl": "https:...",
-  "avatarUrl": "https:...",
   "googleId": "105203025571464766679"
 }
 ```
