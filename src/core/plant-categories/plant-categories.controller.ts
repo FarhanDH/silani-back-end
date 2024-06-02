@@ -1,15 +1,19 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post,
+  Put,
 } from '@nestjs/common';
+import {
+  CreatePlantCategoryRequest,
+  PlantCategoryResponse,
+  UpdatePlantCategoryRequest,
+} from '../model/plant-category.model';
+import { Response } from '../model/response.model';
 import { PlantCategoriesService } from './plant-categories.service';
-import { CreatePlantCategoryDto } from './dto/create-plant-category.dto';
-import { UpdatePlantCategoryDto } from './dto/update-plant-category.dto';
 
 @Controller('plant-categories')
 export class PlantCategoriesController {
@@ -18,30 +22,59 @@ export class PlantCategoriesController {
   ) {}
 
   @Post()
-  async create(@Body() createPlantCategoryDto: CreatePlantCategoryDto) {
-    return await this.plantCategoriesService.create(createPlantCategoryDto);
+  async create(
+    @Body() requestCreate: CreatePlantCategoryRequest,
+  ): Promise<Response<PlantCategoryResponse>> {
+    const result = await this.plantCategoriesService.create(requestCreate);
+    return {
+      message: 'Plant category created successfully',
+      data: result,
+    };
   }
 
   @Get()
-  findAll() {
-    return this.plantCategoriesService.getAll();
+  async getAll(): Promise<Response<PlantCategoryResponse[]>> {
+    const result = await this.plantCategoriesService.getAll();
+    return {
+      message: 'Plant categories retrieved successfully',
+      data: result,
+    };
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.plantCategoriesService.getById(+id);
+  async getById(
+    @Param('id') id: string,
+  ): Promise<Response<PlantCategoryResponse>> {
+    const result = await this.plantCategoriesService.getById(id);
+    return {
+      message: 'Plant category retrieved successfully',
+      data: result,
+    };
   }
 
-  @Patch(':id')
-  update(
+  @Put(':id')
+  async updateById(
     @Param('id') id: string,
-    @Body() updatePlantCategoryDto: UpdatePlantCategoryDto,
-  ) {
-    return this.plantCategoriesService.updateById(+id, updatePlantCategoryDto);
+    @Body() updateRequest: UpdatePlantCategoryRequest,
+  ): Promise<Response<PlantCategoryResponse>> {
+    const result = await this.plantCategoriesService.updateById(
+      id,
+      updateRequest,
+    );
+    return {
+      message: 'Plant category updated successfully',
+      data: result,
+    };
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.plantCategoriesService.deleteById(+id);
+  async deleteById(
+    @Param('id') id: string,
+  ): Promise<Response<PlantCategoryResponse>> {
+    const result = await this.plantCategoriesService.deleteById(id);
+    return {
+      message: 'Plant category deleted successfully',
+      data: result,
+    };
   }
 }

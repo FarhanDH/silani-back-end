@@ -6,8 +6,12 @@ export const plantCategories = pgTable('plant-categories', {
     .primaryKey()
     .default(sql`gen_random_uuid()`),
   name: text('name').notNull().unique(),
-  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp('created_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
-export type PlantCategories = typeof plantCategories.$inferSelect;
+export type PlantCategory = typeof plantCategories.$inferSelect;
