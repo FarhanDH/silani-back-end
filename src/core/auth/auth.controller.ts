@@ -1,9 +1,13 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Body, Controller, Post } from '@nestjs/common';
+import { Response } from '../models/response.model';
+import {
+  GoogleUserRequest,
+  LoginUserRequest,
+  RegisterUserRequest,
+  UserResponse,
+} from '../models/user.model';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from '../users/dto/create-user.dto';
-import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -13,23 +17,35 @@ export class AuthController {
   ) {}
 
   @Post('register')
-  async registerUser(@Body() createUserDto: CreateUserDto) {
-    return await this.usersService.registerUser(createUserDto);
+  async registerUser(
+    @Body() registerRequest: RegisterUserRequest,
+  ): Promise<Response<UserResponse>> {
+    const result = await this.usersService.registerUser(registerRequest);
+    return {
+      message: 'User registered successfully',
+      data: result,
+    };
   }
 
   @Post('login')
-  async loginUser(@Body() loginDto: LoginDto) {
-    return await this.authService.loginuser(loginDto);
+  async loginUser(
+    @Body() loginRequest: LoginUserRequest,
+  ): Promise<Response<UserResponse>> {
+    const result = await this.authService.loginuser(loginRequest);
+    return {
+      message: 'User logged in successfully',
+      data: result,
+    };
   }
 
-  @Get('google')
-  @UseGuards(AuthGuard('google'))
-  async googleAuth(): Promise<void> {}
-
-  @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: any) {
-    await this.usersService.signInUserFromGoogle(req.user);
-    return await this.authService.loginuser(req.user);
+  @Post('google')
+  async googleUser(
+    @Body() googleUserRequest: GoogleUserRequest,
+  ): Promise<Response<UserResponse>> {
+    const result = await this.usersService.googleUser(googleUserRequest);
+    return {
+      message: 'User logged in successfully',
+      data: result,
+    };
   }
 }

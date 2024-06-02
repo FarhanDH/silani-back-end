@@ -13,7 +13,7 @@ import {
   CreatePlantCategoryRequest,
   PlantCategoryResponse,
   UpdatePlantCategoryRequest,
-} from '../model/plant-category.model';
+} from '../models/plant-category.model';
 import { eq } from 'drizzle-orm';
 import { Validation } from '~/common/validation';
 

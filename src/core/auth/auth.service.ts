@@ -1,40 +1,38 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+  forwardRef,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { config } from '~/common/config';
 import { UsersService } from '../users/users.service';
-import { LoginDto } from './dto/login.dto';
 import { compare } from 'bcrypt';
+import { LoginUserRequest, UserResponse } from '../models/user.model';
 
 const EXPIRE_TIME = 1000 * 60 * 60 * 24 * 365;
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
   ) {}
 
   private readonly logger: Logger = new Logger(AuthService.name);
 
-  async loginuser(loginDto: LoginDto) {
-    this.logger.debug(`loginuser: ${JSON.stringify(loginDto)}`);
-    const user = await this.validateUser(loginDto);
-    // check if user contain password
-    if (loginDto.password) {
-      const userData = await this.generateToken(user);
-      delete userData.user.googleId;
-      delete userData.user.facebookId;
-      return userData;
-    }
-
-    // if user not contain password, check if user is google user
-    if (!loginDto.password && loginDto.googleId === user?.googleId) {
-      const userData = await this.generateToken(user);
-
-      // remove facebookId field from userData
-      delete userData.user.facebookId;
-      return userData;
-    }
+  async loginuser(loginUserRequest: LoginUserRequest): Promise<UserResponse> {
+    this.logger.debug(`loginuser: ${JSON.stringify(loginUserRequest)}`);
+    const user = await this.validateUser(loginUserRequest);
+    const userData = await this.generateToken(user);
+    delete userData.user.googleId;
+    delete userData.user.facebookId;
+    return {
+      ...userData.user,
+      token: userData.token,
+    };
   }
 
   async generateToken(user: any) {
@@ -48,7 +46,7 @@ export class AuthService {
 
     return {
       user,
-      backendTokens: {
+      token: {
         accessToken: await this.jwtService.signAsync(payload, {
           expiresIn: '365d',
           secret: config().jwt.secret,
@@ -58,15 +56,17 @@ export class AuthService {
     };
   }
 
-  async validateUser(loginDto: LoginDto) {
-    this.logger.debug(`validateUser: ${JSON.stringify(loginDto)}`);
-    const user = await this.usersService.findByEmail(loginDto.email);
+  async validateUser(
+    loginUserRequest: LoginUserRequest,
+  ): Promise<any | undefined> {
+    this.logger.debug(`validateUser: ${JSON.stringify(loginUserRequest)}`);
+    const user = await this.usersService.findByEmail(loginUserRequest.email);
 
     // check if user and password exist
     if (
       user &&
-      loginDto.password &&
-      (await compare(loginDto.password, user.password as string))
+      loginUserRequest.password &&
+      (await compare(loginUserRequest.password, user.password as string))
     ) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...result } = user;

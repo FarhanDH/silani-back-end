@@ -11,9 +11,13 @@ export const users = pgTable('users', {
   dateOfBirth: date('date_of_birth'),
   googleId: text('google_id'),
   facebookId: text('facebook_id'),
-  avatarUrl: text('avatar_url'),
-  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+  avatarUrl: text('avatar_url').notNull(),
+  createdAt: timestamp('created_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export type User = typeof users.$inferSelect;

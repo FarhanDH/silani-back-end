@@ -11,8 +11,8 @@ import {
   CreatePlantCategoryRequest,
   PlantCategoryResponse,
   UpdatePlantCategoryRequest,
-} from '../model/plant-category.model';
-import { Response } from '../model/response.model';
+} from '../models/plant-category.model';
+import { Response } from '../models/response.model';
 import { PlantCategoriesService } from './plant-categories.service';
 
 @Controller('plant-categories')
