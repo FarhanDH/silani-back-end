@@ -10,6 +10,7 @@ Request Body :
 {
   "fullName": "Joko Pirang",
   "email": "joko@mail.com",
+  "dateOfBirth": "2024-06-02",
   "password": "rahasia"
 }
 ```
@@ -18,9 +19,16 @@ Response Body :
 
 ```json
 {
-  "id": "12345678-1234-1234-1234-1234567890ab",
-  "fullName": "Joko Pirang",
-  "email": "joko@mail.com"
+  "message": "User registered successfully",
+  "data": {
+    "id": "12345678-1234-1234-1234-1234567890ab",
+    "fullName": "Joko Pirang",
+    "email": "joko@mail.com",
+    "avatarUrl": "https:...",
+    "dateOfBirth": "2024-06-02",
+    "createdAt": "2024-06-02T14:03:59.960Z",
+    "updatedAt": "2024-06-02T14:03:59.960Z"
+  }
 }
 ```
 
@@ -41,43 +49,57 @@ Response Body :
 
 ```json
 {
-  "user": {
+  "message": "User logged in successfully",
+  "data": {
     "id": "12345678-1234-1234-1234-1234567890ab",
     "fullName": "Joko Pirang",
     "email": "joko@mail.com",
-    "dateOfBirth": null,
-    "avatarUrl": "",
-    "createdAt": "",
-    "updatedAt": ""
-  },
-  "backendTokens": {
-    "accessToken": "JWT Token",
-    "expiresIn": 12345
+    "avatarUrl": "https:...",
+    "dateOfBirth": "2024-06-02",
+    "createdAt": "2024-06-02T14:03:59.960Z",
+    "updatedAt": "2024-06-02T14:03:59.960Z",
+    "token": {
+      "accessToken": "",
+      "expiresIn": 12345678910
+    }
   }
 }
 ```
 
 ## Sign In User Using Google
 
-Endpoint : GET /api/auth/google
+Endpoint : POST /api/auth/google
+
+Request Body :
+
+```json
+{
+  "fullName": "Joko Pirang",
+  "email": "joko@mail.com",
+  "avatarUrl": "https:...",
+  "avatarUrl": "https:...",
+  "googleId": "105203025571464766679"
+}
+```
 
 Response Body :
 
 ```json
 {
-  "user": {
+  "message": "User logged in successfully",
+  "data": {
     "id": "12345678-1234-1234-1234-1234567890ab",
-    "fullName": "Joko Pirang",
-    "email": "joko@mail.com",
+    "fullName": "Angin Malam",
+    "email": "farhandwihartantu@gmail.com",
     "dateOfBirth": null,
-    "googleId": "1234567",
-    "avatarUrl": "",
-    "createdAt": "",
-    "updatedAt": ""
-  },
-  "backendTokens": {
-    "accessToken": "JWT Token",
-    "expiresIn": 12345
+    "googleId": "105203025571464766679",
+    "avatarUrl": "https:...",
+    "createdAt": "2024-06-01T08:46:57.171Z",
+    "updatedAt": "2024-06-01T08:46:57.171Z",
+    "token": {
+      "accessToken": "",
+      "expiresIn": 12345678910
+    }
   }
 }
 ```
