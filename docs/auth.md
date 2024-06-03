@@ -10,7 +10,7 @@ Request Body :
 {
   "fullName": "Joko Pirang",
   "email": "joko@mail.com",
-  "dateOfBirth": "2024-06-02",
+  "dateOfBirth": "2024-06-02" | null,
   "password": "rahasia"
 }
 ```

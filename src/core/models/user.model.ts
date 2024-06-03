@@ -22,8 +22,8 @@ export class RegisterUserRequest {
   password: string;
 
   @IsDateString()
-  @IsNotEmpty()
-  dateOfBirth: string;
+  @IsOptional()
+  dateOfBirth?: string | null;
 }
 
 export class LoginUserRequest {
