@@ -25,4 +25,9 @@ export const config = () => ({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET as unknown as string,
     callbackURL: process.env.GOOGLE_CALLBACK_URL as unknown as string,
   },
+
+  // load webhook configuration
+  webhook: {
+    secret: process.env.WEBHOOK_SECRET as unknown as string,
+  },
 });

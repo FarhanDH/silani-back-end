@@ -1,3 +1,4 @@
+import { clerkClient } from '@clerk/clerk-sdk-node';
 import {
   ConflictException,
   Inject,
@@ -5,15 +6,14 @@ import {
   Logger,
   forwardRef,
 } from '@nestjs/common';
-import { hash } from 'bcrypt';
 import { DrizzleService } from '~/common/drizzle/drizzle.service';
 import { users } from '~/common/drizzle/schema';
+import { AuthService } from '../auth/auth.service';
 import {
   GoogleUserRequest,
   RegisterUserRequest,
   UserResponse,
 } from '../models/user.model';
-import { AuthService } from '../auth/auth.service';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +23,10 @@ export class UsersService {
     private readonly drizzleService: DrizzleService,
   ) {}
   private readonly logger: Logger = new Logger(UsersService.name);
+
+  async getUsers(): Promise<any> {
+    return await clerkClient.users.getUserList();
+  }
 
   async registerUser(
     registerRequest: RegisterUserRequest,
@@ -44,8 +48,6 @@ export class UsersService {
       .insert(users)
       .values({
         ...registerRequest,
-        avatarUrl: `https://ui-avatars.com/api/?name=${registerRequest.fullName}`,
-        password: await hash(registerRequest.password, 10),
       })
       .returning({
         id: users.id,
@@ -69,7 +71,7 @@ export class UsersService {
     const isUserExists = await this.findByEmail(googleUserRequest.email);
     if (isUserExists && isUserExists.googleId) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, facebookId, ...result } = isUserExists;
+      const { facebookId, ...result } = isUserExists;
       const user = await this.authService.generateToken(result);
       return {
         ...user.user,
@@ -112,7 +114,7 @@ export class UsersService {
 
   async findByEmail(email: string) {
     return await this.drizzleService.db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.email, email),
+      where: (users: { email: any }, { eq }: any) => eq(users.email, email),
     });
   }
 }

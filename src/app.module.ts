@@ -7,6 +7,7 @@ import { StorageModule } from './core/storage/storage.module';
 import { AuthModule } from './core/auth/auth.module';
 import { UsersModule } from './core/users/users.module';
 import { PlantCategoriesModule } from './core/plant-categories/plant-categories.module';
+import { WebhooksModule } from './core/webhooks/webhooks.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { PlantCategoriesModule } from './core/plant-categories/plant-categories.
     AuthModule,
     UsersModule,
     PlantCategoriesModule,
+    WebhooksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

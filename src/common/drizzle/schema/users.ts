@@ -7,11 +7,10 @@ export const users = pgTable('users', {
     .default(sql`gen_random_uuid()`),
   fullName: text('full_name').notNull(),
   email: text('email').notNull().unique(),
-  password: text('password'),
   dateOfBirth: date('date_of_birth'),
+  avatarUrl: text('avatar_url').notNull(),
   googleId: text('google_id'),
   facebookId: text('facebook_id'),
-  avatarUrl: text('avatar_url').notNull(),
   createdAt: timestamp('created_at')
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

@@ -19,7 +19,7 @@ export class RegisterUserRequest {
 
   @IsString()
   @IsNotEmpty()
-  password: string;
+  avatarUrl: string;
 
   @IsDateString()
   @IsOptional()

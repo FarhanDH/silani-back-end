@@ -2,7 +2,6 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { Response } from '../models/response.model';
 import {
   GoogleUserRequest,
-  LoginUserRequest,
   RegisterUserRequest,
   UserResponse,
 } from '../models/user.model';
@@ -23,17 +22,6 @@ export class AuthController {
     const result = await this.usersService.registerUser(registerRequest);
     return {
       message: 'User registered successfully',
-      data: result,
-    };
-  }
-
-  @Post('login')
-  async loginUser(
-    @Body() loginRequest: LoginUserRequest,
-  ): Promise<Response<UserResponse>> {
-    const result = await this.authService.loginuser(loginRequest);
-    return {
-      message: 'User logged in successfully',
       data: result,
     };
   }
