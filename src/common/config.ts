@@ -30,4 +30,8 @@ export const config = () => ({
   webhook: {
     secret: process.env.WEBHOOK_SECRET as unknown as string,
   },
+
+  clerk: {
+    url: process.env.CLERK_ISSUER_URL as unknown as string,
+  },
 });
