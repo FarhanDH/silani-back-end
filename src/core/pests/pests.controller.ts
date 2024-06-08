@@ -10,10 +10,10 @@ import {
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { CreatePestDto } from './dto/create-pest.dto';
-import { PestsService } from './pests.service';
-import { UpdatePestDto } from './dto/update-pest.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { CreatePestDto } from './dto/create-pest.dto';
+import { UpdatePestDto } from './dto/update-pest.dto';
+import { PestsService } from './pests.service';
 
 @Controller('pests')
 export class PestsController {

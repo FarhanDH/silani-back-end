@@ -32,6 +32,8 @@ export const config = () => ({
   },
 
   clerk: {
+    secretKey: process.env.CLERK_SECRET_KEY as unknown as string,
+    pemPublicKey: process.env.PEM_PUBLIC_KEY as unknown as string,
     url: process.env.CLERK_ISSUER_URL as unknown as string,
   },
 });
