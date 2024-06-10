@@ -24,6 +24,7 @@ export const config = () => ({
     clientId: process.env.GOOGLE_CLIENT_ID as unknown as string,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET as unknown as string,
     callbackURL: process.env.GOOGLE_CALLBACK_URL as unknown as string,
+    geminiApiKey: process.env.GEMINI_API_KEY as unknown as string,
   },
 
   // load webhook configuration
@@ -31,6 +32,7 @@ export const config = () => ({
     secret: process.env.WEBHOOK_SECRET as unknown as string,
   },
 
+  //
   clerk: {
     secretKey: process.env.CLERK_SECRET_KEY as unknown as string,
     pemPublicKey: process.env.PEM_PUBLIC_KEY as unknown as string,

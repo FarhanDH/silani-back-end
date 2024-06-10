@@ -8,6 +8,7 @@ import { AuthModule } from './core/auth/auth.module';
 import { UsersModule } from './core/users/users.module';
 import { PlantCategoriesModule } from './core/plant-categories/plant-categories.module';
 import { WebhooksModule } from './core/webhooks/webhooks.module';
+import { AiChatModule } from './core/ai-chat/ai-chat.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { WebhooksModule } from './core/webhooks/webhooks.module';
     UsersModule,
     PlantCategoriesModule,
     WebhooksModule,
+    AiChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
