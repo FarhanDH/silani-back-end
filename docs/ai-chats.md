@@ -17,7 +17,7 @@ Request Form Data:
 ```json
 {
   "prompt": "string",
-  "image": "file (jpg|jpeg|png|svg|tiff|webp) extension (required)"
+  "image": "file (jpg|jpeg|png|svg|tiff|webp) extension (optional)"
 }
 ```
 
@@ -32,7 +32,8 @@ Response Body :
     "prompt": "",
     "imageUrl": "",
     "imageKey": "",
-    "createdAt": ""
+    "createdAt": "",
+    "model": ""
   }
 }
 ```

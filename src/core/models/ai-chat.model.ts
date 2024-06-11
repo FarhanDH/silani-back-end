@@ -19,6 +19,10 @@ export class AIChatResponse {
   @IsNotEmpty()
   response: string;
 
+  @IsString()
+  @IsNotEmpty()
+  model: string;
+
   @IsDate()
   @IsNotEmpty()
   createdAt: Date;

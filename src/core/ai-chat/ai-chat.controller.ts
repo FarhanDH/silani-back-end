@@ -33,9 +33,22 @@ export class AiChatController {
         .addMaxSizeValidator({ maxSize: 1000000 })
         .build({ fileIsRequired: false }),
     )
-    image: Express.Multer.File,
+    image?: Express.Multer.File,
   ): Promise<Response<AIChatResponse>> {
-    const result = await this.aiChatService.geminiAI(req.user, prompt, image);
+    const isImageExist = image ? image : false;
+
+    if (isImageExist) {
+      const result = await this.aiChatService.geminiAI(
+        req.user,
+        prompt,
+        isImageExist,
+      );
+      return {
+        message: 'AI chat sent successfully',
+        data: result,
+      };
+    }
+    const result = await this.aiChatService.groqAI(req.user, prompt);
     return {
       message: 'AI chat sent successfully',
       data: result,
