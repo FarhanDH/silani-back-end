@@ -57,7 +57,7 @@ export class PlantCategoriesService {
     this.logger.debug(`PlantCategoriesService.getById(${plantCategoryId})`);
 
     // is id is correct pattern
-    Validation.validateId(plantCategoryId);
+    Validation.uuid(plantCategoryId);
 
     const plantCategory = await this.checkPlantCategoryById(plantCategoryId);
 
@@ -73,7 +73,7 @@ export class PlantCategoriesService {
     );
 
     // is id is correct pattern
-    Validation.validateId(plantCategoryId);
+    Validation.uuid(plantCategoryId);
 
     // Check if a plant category with the same name already exists
     const isPlantCategoryExistByName = await this.findByName(
@@ -98,7 +98,7 @@ export class PlantCategoriesService {
   async deleteById(id: string): Promise<PlantCategoryResponse> {
     this.logger.debug(`PlantCategoriesService.deleteById(${id})`);
     // is id is correct pattern
-    Validation.validateId(id);
+    Validation.uuid(id);
     await this.checkPlantCategoryById(id);
 
     const plantCategory = await this.drizzleService.db

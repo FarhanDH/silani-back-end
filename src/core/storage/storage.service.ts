@@ -61,7 +61,7 @@ export class StorageService {
    * @param key - The key or path of the object in the storage.
    * @returns The public URL for the object.
    */
-  getUrlFromStorage(key: string) {
+  private getUrlFromStorage(key: string) {
     const url = `https://${config().storage.bucket}.s3.${config().storage.region}.amazonaws.com/${key}`;
     return url;
   }

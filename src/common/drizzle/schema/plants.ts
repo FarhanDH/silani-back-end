@@ -12,8 +12,12 @@ export const plants = pgTable('plants', {
     .references(() => plantCategories.id, { onDelete: 'cascade' }),
   imageUrl: text('image_url').notNull(),
   imageKey: text('image_key').notNull(),
-  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`),
-  updatedAt: timestamp('updated_at').default(sql`CURRENT_TIMESTAMP`),
+  createdAt: timestamp('created_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
 });
 
 export type Plant = typeof plants.$inferSelect;

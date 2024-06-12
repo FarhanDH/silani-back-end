@@ -9,6 +9,7 @@ import { UsersModule } from './core/users/users.module';
 import { PlantCategoriesModule } from './core/plant-categories/plant-categories.module';
 import { WebhooksModule } from './core/webhooks/webhooks.module';
 import { AiChatModule } from './core/ai-chat/ai-chat.module';
+import { PlantsModule } from './core/plants/plants.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AiChatModule } from './core/ai-chat/ai-chat.module';
     PlantCategoriesModule,
     WebhooksModule,
     AiChatModule,
+    PlantsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
