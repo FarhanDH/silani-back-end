@@ -10,6 +10,7 @@ import { StorageService } from '../storage/storage.service';
 import { Plant, plants } from '~/common/drizzle/schema/plants';
 import { uniqueKeyFile } from '~/common/utils';
 import { Validation } from '~/common/validation';
+import { asc } from 'drizzle-orm';
 
 @Injectable()
 export class PlantsService {
@@ -66,8 +67,16 @@ export class PlantsService {
     }
   }
 
-  findAll() {
-    return `This action returns all plants`;
+  async getAll(): Promise<PlantResponse[]> {
+    return await this.drizzleService.db.query.plants.findMany({
+      columns: {
+        plantCategoryId: false,
+      },
+      with: {
+        plantCategory: true,
+      },
+      orderBy: [asc(plants.name)],
+    });
   }
 
   findOne(id: string) {

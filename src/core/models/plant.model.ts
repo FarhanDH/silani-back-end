@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsString } from 'class-validator';
+import { PlantCategoryResponse } from './plant-category.model';
 
 export class CreatePlantRequest {
   @IsNotEmpty()
@@ -13,9 +14,10 @@ export class CreatePlantRequest {
 export class PlantResponse {
   id: string;
   name: string;
-  plantCategoryId: string;
+  plantCategoryId?: string;
   imageUrl: string;
   imageKey: string;
   createdAt: Date;
   updatedAt: Date;
+  plantCategory?: PlantCategoryResponse;
 }

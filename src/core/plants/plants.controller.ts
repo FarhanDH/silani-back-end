@@ -41,8 +41,12 @@ export class PlantsController {
   }
 
   @Get()
-  findAll() {
-    return this.plantsService.findAll();
+  async getAll(): Promise<Response<PlantResponse[]>> {
+    const result = await this.plantsService.getAll();
+    return {
+      message: 'Plants retrieved successfully',
+      data: result,
+    };
   }
 
   @Get(':id')
