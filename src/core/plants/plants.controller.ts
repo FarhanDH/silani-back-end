@@ -50,8 +50,12 @@ export class PlantsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.plantsService.findOne(id);
+  async getOneById(@Param('id') id: string): Promise<Response<PlantResponse>> {
+    const result = await this.plantsService.getOneById(id);
+    return {
+      message: 'Plant retrieved successfully',
+      data: result,
+    };
   }
 
   @Patch(':id')

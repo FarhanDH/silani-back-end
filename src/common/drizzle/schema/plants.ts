@@ -20,11 +20,11 @@ export const plants = pgTable('plants', {
     .notNull(),
 });
 
-export type Plant = typeof plants.$inferSelect;
-
 export const plantsRelations = relations(plants, ({ one }) => ({
   plantCategory: one(plantCategories, {
     fields: [plants.plantCategoryId],
     references: [plantCategories.id],
   }),
 }));
+
+export type Plant = typeof plants.$inferSelect;
