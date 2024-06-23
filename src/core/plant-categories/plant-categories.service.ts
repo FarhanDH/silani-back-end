@@ -97,8 +97,6 @@ export class PlantCategoriesService {
 
   async deleteById(id: string): Promise<PlantCategoryResponse> {
     this.logger.debug(`PlantCategoriesService.deleteById(${id})`);
-    // is id is correct pattern
-    Validation.uuid(id);
     await this.checkPlantCategoryById(id);
 
     const plantCategory = await this.drizzleService.db
@@ -121,6 +119,8 @@ export class PlantCategoriesService {
   }
 
   async checkPlantCategoryById(id: string): Promise<PlantCategory> {
+    // check is id is correct pattern
+    Validation.uuid(id);
     const plantCategory =
       await this.drizzleService.db.query.plantCategories.findFirst({
         where: (plantCategories, { eq }) => eq(plantCategories.id, id),

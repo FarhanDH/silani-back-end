@@ -5,19 +5,25 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { asc } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { DrizzleService } from '~/common/drizzle/drizzle.service';
 import { PlantCategory } from '~/common/drizzle/schema';
 import { Plant, plants } from '~/common/drizzle/schema/plants';
 import { uniqueKeyFile } from '~/common/utils';
 import { Validation } from '~/common/validation';
-import { CreatePlantRequest, PlantResponse } from '../models/plant.model';
+import {
+  CreatePlantRequest,
+  PlantResponse,
+  UpdatePlantRequest,
+} from '../models/plant.model';
 import { StorageService } from '../storage/storage.service';
+import { PlantCategoriesService } from '../plant-categories/plant-categories.service';
 
 @Injectable()
 export class PlantsService {
   constructor(
     private readonly drizzleService: DrizzleService,
+    private readonly plantCategoriesService: PlantCategoriesService,
     private readonly storageService: StorageService,
   ) {}
   private readonly logger: Logger = new Logger(PlantsService.name);
@@ -30,8 +36,10 @@ export class PlantsService {
       `PlantsService.create(${JSON.stringify(createPlantRequest)}, with image ${image.originalname})`,
     );
 
-    // is plant category id is valid pattern
-    Validation.uuid(createPlantRequest.plantCategoryId);
+    // is plant category exist
+    await this.plantCategoriesService.checkPlantCategoryById(
+      createPlantRequest.plantCategoryId,
+    );
 
     // check is plant already exist by name
     const isPlantExistByName = await this.findByName(createPlantRequest.name);
@@ -83,16 +91,102 @@ export class PlantsService {
   }
 
   async getOneById(id: string): Promise<PlantResponse> {
-    // is id is correct pattern
-    Validation.uuid(id);
-
     const plant = await this.checkPlantById(id);
     const plantCategory = plant.plantCategory;
     return this.toPlantResponse(plant as Plant, plantCategory);
   }
 
-  update(id: string) {
-    return `This action updates a #${id} plant`;
+  async updateById(
+    plantId: string,
+    updatePlantRequest: UpdatePlantRequest,
+    image?: Express.Multer.File,
+  ): Promise<PlantResponse> {
+    this.logger.debug(
+      `PlantsService.update(${JSON.stringify(updatePlantRequest)}, with image ${image?.originalname})`,
+    );
+
+    // is plant category exist by id
+    if (updatePlantRequest.plantCategoryId) {
+      await this.plantCategoriesService.checkPlantCategoryById(
+        updatePlantRequest.plantCategoryId,
+      );
+    }
+    // is plant exist by id and name
+    const [isPlantExistById, isPlantExistByName] = await Promise.all([
+      this.checkPlantById(plantId),
+      this.findByName(updatePlantRequest.name),
+    ]);
+
+    // throw Exception if plant already exist by name
+    if (isPlantExistByName) {
+      this.logger.warn(`Plant ${updatePlantRequest.name} already exists`);
+      throw new ConflictException(
+        `Plant ${updatePlantRequest.name} already exists`,
+      );
+    }
+
+    // handle update if image is provided
+    if (image) {
+      const generateUniqueKeyFileName = uniqueKeyFile(
+        'plant',
+        image.originalname,
+      );
+      try {
+        const imageUploded = await this.storageService.upload(
+          generateUniqueKeyFileName,
+          image.buffer,
+          image.mimetype,
+        );
+
+        // update database, get updated plant, delete existing image from storage
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const [[updatedPlant], deletedImageFromStorage] = await Promise.all([
+          this.drizzleService.db
+            .update(plants)
+            .set({
+              ...updatePlantRequest,
+              imageUrl: imageUploded.url,
+              imageKey: generateUniqueKeyFileName,
+              updatedAt: new Date(),
+            })
+            .where(eq(plants.id, plantId))
+            .returning(),
+          this.storageService.delete(isPlantExistById.imageKey),
+        ]);
+
+        // response updated plant from database
+        const getPlantCategory =
+          await this.plantCategoriesService.checkPlantCategoryById(
+            updatedPlant.plantCategoryId,
+          );
+        return this.toPlantResponse(updatedPlant as Plant, getPlantCategory);
+      } catch (error) {
+        this.logger.error(error);
+        throw new HttpException(error, 500);
+      }
+    }
+
+    // handle update if image is not provided
+    try {
+      const [updatedPlant] = await this.drizzleService.db
+        .update(plants)
+        .set({
+          ...updatePlantRequest,
+          updatedAt: new Date(),
+        })
+        .where(eq(plants.id, plantId))
+        .returning();
+
+      // response updated plant from database
+      const getPlantCategory =
+        await this.plantCategoriesService.checkPlantCategoryById(
+          updatedPlant.plantCategoryId,
+        );
+      return this.toPlantResponse(updatedPlant as Plant, getPlantCategory);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(error, 500);
+    }
   }
 
   remove(id: string) {
@@ -124,6 +218,9 @@ export class PlantsService {
   }
 
   async checkPlantById(id: string): Promise<PlantResponse> {
+    // check is id is correct pattern
+    Validation.uuid(id);
+
     const plant = await this.drizzleService.db.query.plants.findFirst({
       where: (plants, { eq }) => eq(plants.id, id),
       with: {
@@ -132,6 +229,7 @@ export class PlantsService {
     });
 
     if (!plant) {
+      this.logger.warn(`Plant ${id} does not exist`);
       throw new NotFoundException(`Plant ${id} does not exist`);
     }
 

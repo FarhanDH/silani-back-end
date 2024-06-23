@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { PlantCategoryResponse } from './plant-category.model';
 
 export class CreatePlantRequest {
@@ -7,6 +7,16 @@ export class CreatePlantRequest {
   name: string;
 
   @IsNotEmpty()
+  @IsString()
+  plantCategoryId: string;
+}
+
+export class UpdatePlantRequest {
+  @IsOptional()
+  @IsString()
+  name: string;
+
+  @IsOptional()
   @IsString()
   plantCategoryId: string;
 }

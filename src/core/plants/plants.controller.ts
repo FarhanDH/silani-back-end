@@ -1,19 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseInterceptors,
-  UploadedFile,
+  Get,
+  Param,
   ParseFilePipeBuilder,
+  Post,
+  Put,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { PlantsService } from './plants.service';
-import { CreatePlantRequest, PlantResponse } from '../models/plant.model';
 import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  CreatePlantRequest,
+  PlantResponse,
+  UpdatePlantRequest,
+} from '../models/plant.model';
 import { Response } from '../models/response.model';
+import { PlantsService } from './plants.service';
 
 @Controller('plants')
 export class PlantsController {
@@ -58,9 +62,30 @@ export class PlantsController {
     };
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string) {
-    return this.plantsService.update(id);
+  @Put(':id')
+  @UseInterceptors(FileInterceptor('image'))
+  async updateById(
+    @Param('id') id: string,
+    @Body() updatePlantRequest: UpdatePlantRequest,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /(jfif|jpg|jpeg|png|svg|tiff|webp)$/,
+        })
+        .addMaxSizeValidator({ maxSize: 1000000 })
+        .build({ fileIsRequired: false }),
+    )
+    image?: Express.Multer.File,
+  ): Promise<Response<PlantResponse>> {
+    const result = await this.plantsService.updateById(
+      id,
+      updatePlantRequest,
+      image,
+    );
+    return {
+      message: 'Plant updated successfully',
+      data: result,
+    };
   }
 
   @Delete(':id')
