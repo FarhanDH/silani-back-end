@@ -37,9 +37,10 @@ export class PlantsService {
     );
 
     // is plant category exist
-    await this.plantCategoriesService.checkPlantCategoryById(
-      createPlantRequest.plantCategoryId,
-    );
+    const checkPlantCategory =
+      await this.plantCategoriesService.checkPlantCategoryById(
+        createPlantRequest.plantCategoryId,
+      );
 
     // check is plant already exist by name
     const isPlantExistByName = await this.findByName(createPlantRequest.name);
@@ -70,7 +71,8 @@ export class PlantsService {
           imageKey: generateUniqueKeyFileName,
         })
         .returning();
-      return this.toPlantResponse(createdPlant);
+
+      return this.toPlantResponse(createdPlant, checkPlantCategory);
     } catch (error) {
       this.logger.error(error);
       throw new HttpException(error, 500);
@@ -92,8 +94,7 @@ export class PlantsService {
 
   async getOneById(id: string): Promise<PlantResponse> {
     const plant = await this.checkPlantById(id);
-    const plantCategory = plant.plantCategory;
-    return this.toPlantResponse(plant as Plant, plantCategory);
+    return this.toPlantResponse(plant as Plant, plant.plantCategory);
   }
 
   async updateById(
@@ -106,10 +107,12 @@ export class PlantsService {
     );
 
     // is plant category exist by id
+    let checkPlantCategory;
     if (updatePlantRequest.plantCategoryId) {
-      await this.plantCategoriesService.checkPlantCategoryById(
-        updatePlantRequest.plantCategoryId,
-      );
+      checkPlantCategory =
+        await this.plantCategoriesService.checkPlantCategoryById(
+          updatePlantRequest.plantCategoryId,
+        );
     }
     // is plant exist by id and name
     const [isPlantExistById, isPlantExistByName] = await Promise.all([
@@ -155,11 +158,7 @@ export class PlantsService {
         ]);
 
         // response updated plant from database
-        const getPlantCategory =
-          await this.plantCategoriesService.checkPlantCategoryById(
-            updatedPlant.plantCategoryId,
-          );
-        return this.toPlantResponse(updatedPlant, getPlantCategory);
+        return this.toPlantResponse(updatedPlant, checkPlantCategory);
       } catch (error) {
         this.logger.error(error);
         throw new HttpException(error, 500);
@@ -178,11 +177,7 @@ export class PlantsService {
         .returning();
 
       // response updated plant from database
-      const getPlantCategory =
-        await this.plantCategoriesService.checkPlantCategoryById(
-          updatedPlant.plantCategoryId,
-        );
-      return this.toPlantResponse(updatedPlant, getPlantCategory);
+      return this.toPlantResponse(updatedPlant, checkPlantCategory);
     } catch (error) {
       this.logger.error(error);
       throw new HttpException(error, 500);

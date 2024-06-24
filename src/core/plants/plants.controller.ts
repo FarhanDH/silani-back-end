@@ -96,7 +96,7 @@ export class PlantsController {
   ): Promise<Response<PlantResponse>> {
     const result = await this.plantsService.deletById(plantId);
     return {
-      message: 'Plant removed successfully',
+      message: 'Plant deleted successfully',
       data: result,
     };
   }
