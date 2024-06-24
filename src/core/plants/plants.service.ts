@@ -102,7 +102,7 @@ export class PlantsService {
     image?: Express.Multer.File,
   ): Promise<PlantResponse> {
     this.logger.debug(
-      `PlantsService.update(${JSON.stringify(updatePlantRequest)}, with image ${image?.originalname})`,
+      `PlantsService.updateById(${JSON.stringify(updatePlantRequest)}, with image ${image?.originalname})`,
     );
 
     // is plant category exist by id
@@ -140,7 +140,7 @@ export class PlantsService {
 
         // update database, get updated plant, delete existing image from storage
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [[updatedPlant], deletedImageFromStorage] = await Promise.all([
+        const [[updatedPlant]] = await Promise.all([
           this.drizzleService.db
             .update(plants)
             .set({
@@ -159,7 +159,7 @@ export class PlantsService {
           await this.plantCategoriesService.checkPlantCategoryById(
             updatedPlant.plantCategoryId,
           );
-        return this.toPlantResponse(updatedPlant as Plant, getPlantCategory);
+        return this.toPlantResponse(updatedPlant, getPlantCategory);
       } catch (error) {
         this.logger.error(error);
         throw new HttpException(error, 500);
@@ -182,15 +182,37 @@ export class PlantsService {
         await this.plantCategoriesService.checkPlantCategoryById(
           updatedPlant.plantCategoryId,
         );
-      return this.toPlantResponse(updatedPlant as Plant, getPlantCategory);
+      return this.toPlantResponse(updatedPlant, getPlantCategory);
     } catch (error) {
       this.logger.error(error);
       throw new HttpException(error, 500);
     }
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} plant`;
+  async deletById(plantId: string): Promise<PlantResponse> {
+    this.logger.debug(`PlantsService.deletById(${JSON.stringify(plantId)})`);
+    // is plant exist by id
+    const isPlantExistById = await this.checkPlantById(plantId);
+
+    try {
+      const [[deletedPlant]] = await Promise.all([
+        this.drizzleService.db
+          .delete(plants)
+          .where(eq(plants.id, plantId))
+          .returning(),
+        this.storageService.delete(isPlantExistById.imageKey),
+      ]);
+
+      // response deleted plant from database
+      const getPlantCategory =
+        await this.plantCategoriesService.checkPlantCategoryById(
+          deletedPlant.plantCategoryId,
+        );
+      return this.toPlantResponse(deletedPlant, getPlantCategory);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(error, 500);
+    }
   }
 
   toPlantResponse(plant: Plant, plantCategory?: PlantCategory): PlantResponse {

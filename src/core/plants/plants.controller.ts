@@ -53,19 +53,21 @@ export class PlantsController {
     };
   }
 
-  @Get(':id')
-  async getOneById(@Param('id') id: string): Promise<Response<PlantResponse>> {
-    const result = await this.plantsService.getOneById(id);
+  @Get(':plantId')
+  async getOneById(
+    @Param('plantId') plantId: string,
+  ): Promise<Response<PlantResponse>> {
+    const result = await this.plantsService.getOneById(plantId);
     return {
       message: 'Plant retrieved successfully',
       data: result,
     };
   }
 
-  @Put(':id')
+  @Put(':plantId')
   @UseInterceptors(FileInterceptor('image'))
   async updateById(
-    @Param('id') id: string,
+    @Param('plantId') plantId: string,
     @Body() updatePlantRequest: UpdatePlantRequest,
     @UploadedFile(
       new ParseFilePipeBuilder()
@@ -78,7 +80,7 @@ export class PlantsController {
     image?: Express.Multer.File,
   ): Promise<Response<PlantResponse>> {
     const result = await this.plantsService.updateById(
-      id,
+      plantId,
       updatePlantRequest,
       image,
     );
@@ -88,8 +90,14 @@ export class PlantsController {
     };
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.plantsService.remove(id);
+  @Delete(':plantId')
+  async deleteById(
+    @Param('plantId') plantId: string,
+  ): Promise<Response<PlantResponse>> {
+    const result = await this.plantsService.deletById(plantId);
+    return {
+      message: 'Plant removed successfully',
+      data: result,
+    };
   }
 }
