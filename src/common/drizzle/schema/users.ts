@@ -1,6 +1,7 @@
 import { relations, sql } from 'drizzle-orm';
 import { date, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { aIChats } from './ai-chats';
+import { fields } from './fields';
 
 export const users = pgTable('users', {
   id: uuid('id')
@@ -24,4 +25,5 @@ export type User = typeof users.$inferSelect;
 
 export const usersRelations = relations(users, ({ many }) => ({
   aIChats: many(aIChats),
+  fields: many(fields),
 }));
