@@ -10,6 +10,7 @@ import { PlantCategoriesModule } from './core/plant-categories/plant-categories.
 import { WebhooksModule } from './core/webhooks/webhooks.module';
 import { AiChatModule } from './core/ai-chat/ai-chat.module';
 import { PlantsModule } from './core/plants/plants.module';
+import { FieldsModule } from './core/fields/fields.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PlantsModule } from './core/plants/plants.module';
     WebhooksModule,
     AiChatModule,
     PlantsModule,
+    FieldsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
