@@ -58,9 +58,17 @@ export class FieldsController {
     };
   }
 
+  @UseGuards(JwtGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.fieldsService.findOne(+id);
+  async getOneById(
+    @Param('id') id: string,
+    @Request() req: any,
+  ): Promise<Response<FieldResponse>> {
+    const result = await this.fieldsService.getOneById(id, req.user);
+    return {
+      message: 'Field retrieved successfully',
+      data: result,
+    };
   }
 
   @Delete(':id')

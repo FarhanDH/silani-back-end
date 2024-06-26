@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DrizzleService } from '~/common/drizzle/drizzle.service';
-import { fields } from '~/common/drizzle/schema';
+import { Field, fields } from '~/common/drizzle/schema';
 import { uniqueKeyFile } from '~/common/utils';
 import {
   CreateFieldRequest,
@@ -15,6 +15,7 @@ import {
 import { StorageService } from '../storage/storage.service';
 import { UsersService } from '../users/users.service';
 import * as fs from 'fs';
+import { Validation } from '~/common/validation';
 
 @Injectable()
 export class FieldsService {
@@ -96,11 +97,35 @@ export class FieldsService {
     return fields.map((field) => toFieldResponse(field));
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} field`;
+  async getOneById(id: string, user: any): Promise<FieldResponse> {
+    // check is user exist by email, throw exception if not found
+    const isUserExist = await this.usersService.findByEmail(user.user_email);
+    if (!isUserExist) {
+      this.logger.error(`User ${user.user_email} not found`);
+      throw new NotFoundException(`User ${user.user_email} not found`);
+    }
+
+    const field = await this.checkFieldById(id, isUserExist.id);
+    return toFieldResponse(field);
   }
 
   remove(id: number) {
     return `This action removes a #${id} field`;
+  }
+
+  async checkFieldById(fieldId: string, userId: string): Promise<Field> {
+    // is id is correct pattern
+    Validation.uuid(fieldId);
+
+    const fields = await this.drizzleService.db.query.fields.findFirst({
+      where: (field, { eq }) =>
+        eq(field.userId, userId) && eq(field.id, fieldId),
+    });
+
+    if (!fields) {
+      this.logger.error(`Field ${fieldId} not found`);
+      throw new NotFoundException(`Field ${fieldId} not found`);
+    }
+    return fields;
   }
 }

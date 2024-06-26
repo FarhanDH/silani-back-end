@@ -10,7 +10,7 @@ export class Validation {
 
     if (!idPattern.test(id)) {
       this.logger.error(`Validation.uuid(${id}) not found`);
-      throw new NotFoundException(`${id} not found`);
+      throw new NotFoundException(`Id ${id} not found`);
     }
     return true;
   }
