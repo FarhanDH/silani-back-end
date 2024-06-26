@@ -16,6 +16,7 @@ import { StorageService } from '../storage/storage.service';
 import { UsersService } from '../users/users.service';
 import * as fs from 'fs';
 import { Validation } from '~/common/validation';
+import { eq } from 'drizzle-orm';
 
 @Injectable()
 export class FieldsService {
@@ -97,7 +98,7 @@ export class FieldsService {
     return fields.map((field) => toFieldResponse(field));
   }
 
-  async getOneById(id: string, user: any): Promise<FieldResponse> {
+  async getOneById(fieldId: string, user: any): Promise<FieldResponse> {
     // check is user exist by email, throw exception if not found
     const isUserExist = await this.usersService.findByEmail(user.user_email);
     if (!isUserExist) {
@@ -105,12 +106,34 @@ export class FieldsService {
       throw new NotFoundException(`User ${user.user_email} not found`);
     }
 
-    const field = await this.checkFieldById(id, isUserExist.id);
+    const field = await this.checkFieldById(fieldId, isUserExist.id);
     return toFieldResponse(field);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} field`;
+  async deleteById(fieldId: string, user: any): Promise<FieldResponse> {
+    // check is user exist by email, throw exception if not found
+    const isUserExist = await this.usersService.findByEmail(user.user_email);
+    if (!isUserExist) {
+      this.logger.error(`User ${user.user_email} not found`);
+      throw new NotFoundException(`User ${user.user_email} not found`);
+    }
+
+    const isFieldExistById = await this.checkFieldById(fieldId, isUserExist.id);
+
+    try {
+      const [[deletedField]] = await Promise.all([
+        this.drizzleService.db
+          .delete(fields)
+          .where(eq(fields.id, fieldId))
+          .returning(),
+        this.storageService.delete(isFieldExistById.imageKey),
+      ]);
+
+      return toFieldResponse(deletedField);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(error, 500);
+    }
   }
 
   async checkFieldById(fieldId: string, userId: string): Promise<Field> {

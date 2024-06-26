@@ -71,8 +71,16 @@ export class FieldsController {
     };
   }
 
+  @UseGuards(JwtGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.fieldsService.remove(+id);
+  async deleteById(
+    @Param('id') id: string,
+    @Request() req: any,
+  ): Promise<Response<FieldResponse>> {
+    const result = await this.fieldsService.deleteById(id, req.user);
+    return {
+      message: 'Field deleted successfully',
+      data: result,
+    };
   }
 }
