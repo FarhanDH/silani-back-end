@@ -17,6 +17,7 @@ import { UsersService } from '../users/users.service';
 import * as fs from 'fs';
 import { Validation } from '~/common/validation';
 import { eq } from 'drizzle-orm';
+import { AuthJWTPayload } from '../models/auth.model';
 
 @Injectable()
 export class FieldsService {
@@ -29,7 +30,7 @@ export class FieldsService {
 
   async create(
     createFieldRequest: CreateFieldRequest,
-    user: any,
+    user: AuthJWTPayload,
     image?: Express.Multer.File,
   ): Promise<FieldResponse> {
     this.logger.debug(
@@ -83,7 +84,8 @@ export class FieldsService {
     }
   }
 
-  async getAll(user: any): Promise<FieldResponse[]> {
+  async getAll(user: AuthJWTPayload): Promise<FieldResponse[]> {
+    this.logger.verbose(user);
     // check is user exist by email, throw exception if not found
     const isUserExist = await this.usersService.findByEmail(user.user_email);
     if (!isUserExist) {
@@ -98,27 +100,19 @@ export class FieldsService {
     return fields.map((field) => toFieldResponse(field));
   }
 
-  async getOneById(fieldId: string, user: any): Promise<FieldResponse> {
-    // check is user exist by email, throw exception if not found
-    const isUserExist = await this.usersService.findByEmail(user.user_email);
-    if (!isUserExist) {
-      this.logger.error(`User ${user.user_email} not found`);
-      throw new NotFoundException(`User ${user.user_email} not found`);
-    }
-
-    const field = await this.checkFieldById(fieldId, isUserExist.id);
+  async getOneById(
+    fieldId: string,
+    user: AuthJWTPayload,
+  ): Promise<FieldResponse> {
+    const field = await this.checkFieldById(fieldId, user.user_uuid);
     return toFieldResponse(field);
   }
 
-  async deleteById(fieldId: string, user: any): Promise<FieldResponse> {
-    // check is user exist by email, throw exception if not found
-    const isUserExist = await this.usersService.findByEmail(user.user_email);
-    if (!isUserExist) {
-      this.logger.error(`User ${user.user_email} not found`);
-      throw new NotFoundException(`User ${user.user_email} not found`);
-    }
-
-    const isFieldExistById = await this.checkFieldById(fieldId, isUserExist.id);
+  async deleteById(
+    fieldId: string,
+    user: AuthJWTPayload,
+  ): Promise<FieldResponse> {
+    const isFieldExistById = await this.checkFieldById(fieldId, user.user_uuid);
 
     try {
       const [[deletedField]] = await Promise.all([
@@ -142,7 +136,7 @@ export class FieldsService {
 
     const fields = await this.drizzleService.db.query.fields.findFirst({
       where: (field, { eq }) =>
-        eq(field.userId, userId) && eq(field.id, fieldId),
+        eq(field.id, fieldId) && eq(field.userId, userId),
     });
 
     if (!fields) {
@@ -150,5 +144,15 @@ export class FieldsService {
       throw new NotFoundException(`Field ${fieldId} not found`);
     }
     return fields;
+  }
+
+  async isOwner(fieldId: string, userId: string): Promise<boolean> {
+    const isFieldExistById =
+      await this.drizzleService.db.query.fields.findFirst({
+        where: (field, { eq }) =>
+          eq(field.id, fieldId) && eq(field.userId, userId),
+      });
+
+    return isFieldExistById?.userId === userId;
   }
 }

@@ -12,10 +12,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { RequestWithUser } from '~/common/utils';
 import { JwtGuard } from '../auth/guard/jwt.guard';
 import { CreateFieldRequest, FieldResponse } from '../models/field.model';
 import { Response } from '../models/response.model';
 import { FieldsService } from './fields.service';
+import { FieldOwnerGuard } from './guard/field-owner.guard';
 
 @Controller('fields')
 export class FieldsController {
@@ -26,7 +28,7 @@ export class FieldsController {
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Body() createFieldRequest: CreateFieldRequest,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
@@ -50,7 +52,9 @@ export class FieldsController {
 
   @UseGuards(JwtGuard)
   @Get()
-  async getAll(@Request() req: any): Promise<Response<FieldResponse[]>> {
+  async getAll(
+    @Request() req: RequestWithUser,
+  ): Promise<Response<FieldResponse[]>> {
     const result = await this.fieldsService.getAll(req.user);
     return {
       message: 'Fields retrieved successfully',
@@ -58,11 +62,11 @@ export class FieldsController {
     };
   }
 
-  @UseGuards(JwtGuard)
+  @UseGuards(JwtGuard, FieldOwnerGuard)
   @Get(':id')
   async getOneById(
     @Param('id') id: string,
-    @Request() req: any,
+    @Request() req: RequestWithUser,
   ): Promise<Response<FieldResponse>> {
     const result = await this.fieldsService.getOneById(id, req.user);
     return {
@@ -71,13 +75,13 @@ export class FieldsController {
     };
   }
 
-  @UseGuards(JwtGuard)
-  @Delete(':id')
+  @UseGuards(JwtGuard, FieldOwnerGuard)
+  @Delete(':fieldId')
   async deleteById(
-    @Param('id') id: string,
-    @Request() req: any,
+    @Param('fieldId') fieldId: string,
+    @Request() req: RequestWithUser,
   ): Promise<Response<FieldResponse>> {
-    const result = await this.fieldsService.deleteById(id, req.user);
+    const result = await this.fieldsService.deleteById(fieldId, req.user);
     return {
       message: 'Field deleted successfully',
       data: result,
