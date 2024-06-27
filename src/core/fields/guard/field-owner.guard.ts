@@ -14,18 +14,18 @@ export class FieldOwnerGuard implements CanActivate {
   private readonly logger: Logger = new Logger(FieldOwnerGuard.name);
 
   /**
-   * Check if the user is the owner of the comment.
+   * Check if the user is the owner of the field.
    *
-   * @return {Promise<boolean>} A promise that resolves to a boolean indicating if the user is the owner of the comment.
+   * @return {Promise<boolean>} A promise that resolves to a boolean indicating if the user is the owner of the field.
    */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: RequestWithUser = context.switchToHttp().getRequest();
-    const requestingUserid = request.user;
+    const requestingUserid = request.user.user_uuid;
     const requestFieldId = request.params.id;
 
     const isFieldOwner = await this.fieldsService.isOwner(
       requestFieldId,
-      requestingUserid.user_uuid,
+      requestingUserid,
     );
     if (!isFieldOwner) {
       this.logger.error('You are not the owner of this field!');

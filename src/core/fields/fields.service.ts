@@ -10,6 +10,7 @@ import { uniqueKeyFile } from '~/common/utils';
 import {
   CreateFieldRequest,
   FieldResponse,
+  UpdateFieldRequest,
   toFieldResponse,
 } from '../models/field.model';
 import { StorageService } from '../storage/storage.service';
@@ -85,7 +86,6 @@ export class FieldsService {
   }
 
   async getAll(user: AuthJWTPayload): Promise<FieldResponse[]> {
-    this.logger.verbose(user);
     // check is user exist by email, throw exception if not found
     const isUserExist = await this.usersService.findByEmail(user.user_email);
     if (!isUserExist) {
@@ -108,17 +108,84 @@ export class FieldsService {
     return toFieldResponse(field);
   }
 
+  async updateById(
+    fieldId: string,
+    updateFieldRequest: UpdateFieldRequest,
+    user: AuthJWTPayload,
+    image?: Express.Multer.File,
+  ): Promise<FieldResponse> {
+    this.logger.debug(
+      `FieldsService.updateById(User ${JSON.stringify(user)} updating field ${JSON.stringify(updateFieldRequest)}, with image ${JSON.stringify(image)})`,
+    );
+
+    // is field exist by id
+    const isFieldExistById = await this.checkFieldById(fieldId, user.user_uuid);
+
+    if (image) {
+      const generateUniqueKeyFileName = uniqueKeyFile(
+        'field',
+        image.originalname,
+      );
+      try {
+        const imageUploded = await this.storageService.upload(
+          generateUniqueKeyFileName,
+          image.buffer,
+          image.mimetype,
+        );
+
+        // update database, get updated field, delete existing image from storage
+        const [[updatedField]] = await Promise.all([
+          this.drizzleService.db
+            .update(fields)
+            .set({
+              ...updateFieldRequest,
+              imageUrl: imageUploded.url,
+              imageKey: generateUniqueKeyFileName,
+              updatedAt: new Date(),
+            })
+            .where(eq(fields.id, fieldId))
+            .returning(),
+          this.storageService.delete(isFieldExistById.imageKey),
+        ]);
+
+        // response updated plant from database
+        return toFieldResponse(updatedField);
+      } catch (error) {
+        this.logger.error(error);
+        throw new HttpException(error, 500);
+      }
+    }
+
+    // handle if image not provided
+    try {
+      // update database, get updated field, delete existing image from storage
+      const [updatedField] = await this.drizzleService.db
+        .update(fields)
+        .set({
+          ...updateFieldRequest,
+          updatedAt: new Date(),
+        })
+        .where(eq(fields.id, fieldId))
+        .returning();
+
+      // response updated plant from database
+      return toFieldResponse(updatedField);
+    } catch (error) {
+      this.logger.error(error);
+      throw new HttpException(error, 500);
+    }
+  }
+
   async deleteById(
     fieldId: string,
     user: AuthJWTPayload,
   ): Promise<FieldResponse> {
     const isFieldExistById = await this.checkFieldById(fieldId, user.user_uuid);
-
     try {
       const [[deletedField]] = await Promise.all([
         this.drizzleService.db
           .delete(fields)
-          .where(eq(fields.id, fieldId))
+          .where(eq(fields.id, fieldId) && eq(fields.userId, user.user_uuid))
           .returning(),
         this.storageService.delete(isFieldExistById.imageKey),
       ]);

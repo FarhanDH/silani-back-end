@@ -6,6 +6,7 @@ import {
   Param,
   ParseFilePipeBuilder,
   Post,
+  Put,
   Request,
   UploadedFile,
   UseGuards,
@@ -14,7 +15,11 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { RequestWithUser } from '~/common/utils';
 import { JwtGuard } from '../auth/guard/jwt.guard';
-import { CreateFieldRequest, FieldResponse } from '../models/field.model';
+import {
+  CreateFieldRequest,
+  FieldResponse,
+  UpdateFieldRequest,
+} from '../models/field.model';
 import { Response } from '../models/response.model';
 import { FieldsService } from './fields.service';
 import { FieldOwnerGuard } from './guard/field-owner.guard';
@@ -76,12 +81,41 @@ export class FieldsController {
   }
 
   @UseGuards(JwtGuard, FieldOwnerGuard)
-  @Delete(':fieldId')
+  @Put(':id')
+  @UseInterceptors(FileInterceptor('image'))
+  async updateById(
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
+    @Body() updateFieldRequest: UpdateFieldRequest,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /(jfif|jpg|jpeg|png|svg|tiff|webp)$/,
+        })
+        .addMaxSizeValidator({ maxSize: 1000000 })
+        .build({ fileIsRequired: false }),
+    )
+    image?: Express.Multer.File,
+  ): Promise<Response<FieldResponse>> {
+    const result = await this.fieldsService.updateById(
+      id,
+      updateFieldRequest,
+      req.user,
+      image,
+    );
+    return {
+      message: 'Field updated successfully',
+      data: result,
+    };
+  }
+
+  @UseGuards(JwtGuard, FieldOwnerGuard)
+  @Delete(':id')
   async deleteById(
-    @Param('fieldId') fieldId: string,
+    @Param('id') id: string,
     @Request() req: RequestWithUser,
   ): Promise<Response<FieldResponse>> {
-    const result = await this.fieldsService.deleteById(fieldId, req.user);
+    const result = await this.fieldsService.deleteById(id, req.user);
     return {
       message: 'Field deleted successfully',
       data: result,

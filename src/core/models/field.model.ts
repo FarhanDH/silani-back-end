@@ -1,3 +1,4 @@
+import { PartialType } from '@nestjs/mapped-types';
 import { IsNotEmpty, IsNumberString, IsString } from 'class-validator';
 import { Field } from '~/common/drizzle/schema/fields';
 
@@ -14,6 +15,8 @@ export class CreateFieldRequest {
   @IsNotEmpty()
   area: string;
 }
+
+export class UpdateFieldRequest extends PartialType(CreateFieldRequest) {}
 
 export class FieldResponse {
   id: string;
