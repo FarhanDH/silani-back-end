@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { config } from '~/common/config';
 import { DrizzleService } from '~/common/drizzle/drizzle.service';
-import { aIChats } from '~/common/drizzle/schema/ai-chats';
+import { aIChats } from '~/common/drizzle/schema/ai_chats';
 import { uniqueKeyFile } from '~/common/utils';
 import { AIChatResponse, CreateAIChatRequest } from '../models/ai-chat.model';
 import { StorageService } from '../storage/storage.service';

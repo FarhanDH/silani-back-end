@@ -8,7 +8,7 @@ import { DrizzleService } from '~/common/drizzle/drizzle.service';
 import {
   PlantCategory,
   plantCategories,
-} from '~/common/drizzle/schema/plant-categories';
+} from '~/common/drizzle/schema/plant_categories';
 import {
   CreatePlantCategoryRequest,
   PlantCategoryResponse,

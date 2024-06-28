@@ -2,7 +2,7 @@ import { relations, sql } from 'drizzle-orm';
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { plants } from './plants';
 
-export const plantCategories = pgTable('plant-categories', {
+export const plantCategories = pgTable('plant_categories', {
   id: uuid('id')
     .primaryKey()
     .default(sql`gen_random_uuid()`),

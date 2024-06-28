@@ -1,6 +1,6 @@
 import { relations, sql } from 'drizzle-orm';
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { plantCategories } from './plant-categories';
+import { plantCategories } from './plant_categories';
 
 export const plants = pgTable('plants', {
   id: uuid('id')

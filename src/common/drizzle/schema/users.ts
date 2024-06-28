@@ -1,6 +1,6 @@
 import { relations, sql } from 'drizzle-orm';
 import { date, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { aIChats } from './ai-chats';
+import { aIChats } from './ai_chats';
 import { fields } from './fields';
 
 export const users = pgTable('users', {

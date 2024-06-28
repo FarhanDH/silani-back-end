@@ -1,5 +1,6 @@
-import { sql } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { fieldPests } from './field_pests';
 
 export const pests = pgTable('pests', {
   id: uuid('id')
@@ -13,3 +14,7 @@ export const pests = pgTable('pests', {
 });
 
 export type Pest = typeof pests.$inferSelect;
+
+export const pestsRelations = relations(pests, ({ many }) => ({
+  fieldPests: many(fieldPests),
+}));
