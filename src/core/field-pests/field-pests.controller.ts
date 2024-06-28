@@ -1,23 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
-  Request,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Request,
   UseGuards,
 } from '@nestjs/common';
-import { FieldPestsService } from './field-pests.service';
+import { RequestWithUser } from '~/common/utils';
+import { JwtGuard } from '../auth/guard/jwt.guard';
 import {
   CreateFieldPestRequest,
   FieldPestResponse,
   UpdateFieldPestRequest,
 } from '../models/field-pest.model';
-import { JwtGuard } from '../auth/guard/jwt.guard';
 import { Response } from '../models/response.model';
-import { RequestWithUser } from '~/common/utils';
+import { FieldPestsService } from './field-pests.service';
 import { FieldPestOwnerGuard } from './guard/field-pest-owner.guard';
 
 @Controller('field-pests')
@@ -54,20 +54,44 @@ export class FieldPestsController {
 
   @UseGuards(JwtGuard, FieldPestOwnerGuard)
   @Get(':id')
-  async findOne(@Param('id') id: string, @Request() req: RequestWithUser) {
-    return await this.fieldPestsService.getOneById(id, req.user);
-  }
-
-  @Patch(':id')
-  update(
+  async findOne(
     @Param('id') id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<Response<FieldPestResponse>> {
+    const result = await this.fieldPestsService.getOneById(id, req.user);
+    return {
+      message: 'Field Pest retrieved successfully',
+      data: result,
+    };
+  }
+  @UseGuards(JwtGuard, FieldPestOwnerGuard)
+  @Put(':id')
+  async updateById(
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
     @Body() updateFieldPestRequest: UpdateFieldPestRequest,
-  ) {
-    return this.fieldPestsService.update(+id, updateFieldPestRequest);
+  ): Promise<Response<FieldPestResponse>> {
+    const result = await this.fieldPestsService.updateById(
+      id,
+      req.user,
+      updateFieldPestRequest,
+    );
+    return {
+      message: 'Field Pest updated successfully',
+      data: result,
+    };
   }
 
+  @UseGuards(JwtGuard, FieldPestOwnerGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.fieldPestsService.remove(+id);
+  async deleteById(
+    @Param('id') id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<Response<FieldPestResponse>> {
+    const result = await this.fieldPestsService.deletById(id, req.user);
+    return {
+      message: 'Field Pest deleted successfully',
+      data: result,
+    };
   }
 }
