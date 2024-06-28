@@ -16,15 +16,15 @@ import {
   UpdateFieldPestRequest,
 } from '../models/field-pest.model';
 import { JwtGuard } from '../auth/guard/jwt.guard';
-import { FieldOwnerGuard } from '../fields/guard/field-owner.guard';
 import { Response } from '../models/response.model';
 import { RequestWithUser } from '~/common/utils';
+import { FieldPestOwnerGuard } from './guard/field-pest-owner.guard';
 
 @Controller('field-pests')
 export class FieldPestsController {
   constructor(private readonly fieldPestsService: FieldPestsService) {}
 
-  @UseGuards(JwtGuard, FieldOwnerGuard)
+  @UseGuards(JwtGuard, FieldPestOwnerGuard)
   @Post()
   async create(
     @Request() req: RequestWithUser,
@@ -35,19 +35,27 @@ export class FieldPestsController {
       req.user,
     );
     return {
-      message: 'FieldPest created successfully',
+      message: 'Field Pest created successfully',
       data: result,
     };
   }
 
+  @UseGuards(JwtGuard)
   @Get()
-  findAll() {
-    return this.fieldPestsService.findAll();
+  async getAll(
+    @Request() req: RequestWithUser,
+  ): Promise<Response<FieldPestResponse[]>> {
+    const result = await this.fieldPestsService.getAll(req.user);
+    return {
+      message: 'Field Pests retrieved successfully',
+      data: result,
+    };
   }
 
+  @UseGuards(JwtGuard, FieldPestOwnerGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.fieldPestsService.findOne(+id);
+  async findOne(@Param('id') id: string, @Request() req: RequestWithUser) {
+    return await this.fieldPestsService.getOneById(id, req.user);
   }
 
   @Patch(':id')
