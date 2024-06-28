@@ -21,7 +21,10 @@ export class FieldOwnerGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: RequestWithUser = context.switchToHttp().getRequest();
     const requestingUserid = request.user.user_uuid;
-    const requestFieldId = request.params.id;
+    let requestFieldId = request.params.id;
+    if (!requestFieldId) {
+      requestFieldId = request.body.fieldId;
+    }
 
     const isFieldOwner = await this.fieldsService.isOwner(
       requestFieldId,

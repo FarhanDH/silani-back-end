@@ -9,5 +9,6 @@ import { UsersModule } from '../users/users.module';
   imports: [DrizzleModule, StorageModule, UsersModule],
   controllers: [FieldsController],
   providers: [FieldsService],
+  exports: [FieldsService],
 })
 export class FieldsModule {}

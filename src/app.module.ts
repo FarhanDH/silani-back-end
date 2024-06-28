@@ -11,6 +11,7 @@ import { WebhooksModule } from './core/webhooks/webhooks.module';
 import { AiChatModule } from './core/ai-chat/ai-chat.module';
 import { PlantsModule } from './core/plants/plants.module';
 import { FieldsModule } from './core/fields/fields.module';
+import { FieldPestsModule } from './core/field-pests/field-pests.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { FieldsModule } from './core/fields/fields.module';
     AiChatModule,
     PlantsModule,
     FieldsModule,
+    FieldPestsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
