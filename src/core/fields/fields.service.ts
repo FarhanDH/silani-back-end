@@ -17,7 +17,7 @@ import { StorageService } from '../storage/storage.service';
 import { UsersService } from '../users/users.service';
 import * as fs from 'fs';
 import { Validation } from '~/common/validation';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { AuthJWTPayload } from '../models/auth.model';
 
 @Injectable()
@@ -203,7 +203,7 @@ export class FieldsService {
 
     const fields = await this.drizzleService.db.query.fields.findFirst({
       where: (field, { eq }) =>
-        eq(field.id, fieldId) && eq(field.userId, userId),
+        and(eq(field.id, fieldId), eq(field.userId, userId)),
     });
 
     if (!fields) {
@@ -214,10 +214,13 @@ export class FieldsService {
   }
 
   async isOwner(fieldId: string, userId: string): Promise<boolean> {
+    // is id is correct pattern
+    Validation.uuid(fieldId);
+
     const isFieldExistById =
       await this.drizzleService.db.query.fields.findFirst({
         where: (field, { eq }) =>
-          eq(field.id, fieldId) && eq(field.userId, userId),
+          and(eq(field.id, fieldId), eq(field.userId, userId)),
       });
 
     return isFieldExistById?.userId === userId;
