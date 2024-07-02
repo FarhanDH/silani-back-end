@@ -1,0 +1,1 @@
+ALTER TABLE "planting_activities" ALTER COLUMN "harvest_amount" SET DATA TYPE numeric;

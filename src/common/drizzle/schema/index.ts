@@ -6,3 +6,4 @@ export * from './ai_chats';
 export * from './plants';
 export * from './fields';
 export * from './field_pests';
+export * from './planting_activities';

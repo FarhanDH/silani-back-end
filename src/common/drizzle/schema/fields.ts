@@ -2,6 +2,7 @@ import { relations, sql } from 'drizzle-orm';
 import { decimal, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { users } from './users';
 import { fieldPests } from './field_pests';
+import { plantingActivities } from './planting_activities';
 
 export const fields = pgTable('fields', {
   id: uuid('id')
@@ -28,4 +29,5 @@ export type Field = typeof fields.$inferSelect;
 export const fieldsRelations = relations(fields, ({ one, many }) => ({
   user: one(users, { fields: [fields.userId], references: [users.id] }),
   fieldPest: many(fieldPests),
+  plantingActivities: many(plantingActivities),
 }));
