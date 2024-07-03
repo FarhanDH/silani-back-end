@@ -12,6 +12,7 @@ import { AiChatModule } from './core/ai-chat/ai-chat.module';
 import { PlantsModule } from './core/plants/plants.module';
 import { FieldsModule } from './core/fields/fields.module';
 import { FieldPestsModule } from './core/field-pests/field-pests.module';
+import { PlantingActivitiesModule } from './core/planting-activities/planting-activities.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { FieldPestsModule } from './core/field-pests/field-pests.module';
     PlantsModule,
     FieldsModule,
     FieldPestsModule,
+    PlantingActivitiesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

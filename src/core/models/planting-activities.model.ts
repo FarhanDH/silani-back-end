@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import {
-  IsDate,
+  IsDateString,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -17,7 +17,7 @@ export class CreatePlantingActivityRequest {
   @IsUUID()
   plantId: string;
 
-  @IsDate()
+  @IsDateString()
   @IsOptional()
   harvestEstimateDate: Date;
 
@@ -25,7 +25,7 @@ export class CreatePlantingActivityRequest {
   @IsOptional()
   harvestAmount: number;
 
-  @IsDate()
+  @IsDateString()
   @IsOptional()
   harvestedAt: Date;
 }
@@ -40,7 +40,7 @@ export class PlantingActivityResponse {
   plantId: string;
   harvestEstimateDate: Date;
   plantedAt: Date;
-  harvestAmount: string | null;
+  harvestAmount: number | null;
   harvestedAt: Date | null;
 }
 

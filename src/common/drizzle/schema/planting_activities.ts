@@ -1,5 +1,5 @@
 import { relations, sql } from 'drizzle-orm';
-import { numeric, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { bigint, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { fields, plants } from './index';
 
 export const plantingActivities = pgTable('planting_activities', {
@@ -18,7 +18,7 @@ export const plantingActivities = pgTable('planting_activities', {
   plantedAt: timestamp('created_at')
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  harvestAmount: numeric('harvest_amount'),
+  harvestAmount: bigint('harvest_amount', { mode: 'number' }),
   harvestedAt: timestamp('harvested_at'),
 });
 
