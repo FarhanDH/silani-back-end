@@ -1,23 +1,12 @@
 import { clerkClient } from '@clerk/clerk-sdk-node';
-import {
-  ConflictException,
-  Inject,
-  Injectable,
-  Logger,
-  forwardRef,
-} from '@nestjs/common';
+import { ConflictException, Injectable, Logger } from '@nestjs/common';
 import { DrizzleService } from '~/common/drizzle/drizzle.service';
 import { users } from '~/common/drizzle/schema';
-import { AuthService } from '../auth/auth.service';
 import { RegisterUserRequest, UserResponse } from '../models/user.model';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @Inject(forwardRef(() => AuthService))
-    private readonly authService: AuthService,
-    private readonly drizzleService: DrizzleService,
-  ) {}
+  constructor(private readonly drizzleService: DrizzleService) {}
   private readonly logger: Logger = new Logger(UsersService.name);
 
   async getUsers(user: any): Promise<any> {
