@@ -32,24 +32,30 @@ export class PlantingActivitiesService {
       createPlantingActivityRequest.harvestEstimateDate ||
       createPlantingActivityRequest.harvestedAt
     ) {
-      // check harvestEstimateDate and harvestedAt must be greater than or equal to today
-      if (createPlantingActivityRequest.harvestEstimateDate < new Date()) {
-        throw new BadRequestException(
-          'harvestEstimateDate must be greater than or equal to today',
-        );
-      }
-      if (createPlantingActivityRequest.harvestedAt < new Date()) {
-        throw new BadRequestException(
-          'harvestedAt must be greater than or equal to today',
-        );
-      }
-
       createPlantingActivityRequest.harvestEstimateDate = new Date(
         createPlantingActivityRequest.harvestEstimateDate,
       );
       createPlantingActivityRequest.harvestedAt = new Date(
         createPlantingActivityRequest.harvestedAt,
       );
+
+      // check harvestEstimateDate and harvestedAt must be greater than or equal to today
+      if (createPlantingActivityRequest.harvestEstimateDate < new Date()) {
+        this.logger.error(
+          'harvestEstimateDate must be greater than or equal to today',
+        );
+        throw new BadRequestException(
+          'harvestEstimateDate must be greater than or equal to today',
+        );
+      }
+      if (createPlantingActivityRequest.harvestedAt < new Date()) {
+        this.logger.error(
+          'harvestEstimateDate must be greater than or equal to today',
+        );
+        throw new BadRequestException(
+          'harvestedAt must be greater than or equal to today',
+        );
+      }
     }
 
     try {
