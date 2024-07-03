@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { JwtGuard } from '../auth/guard/jwt.guard';
@@ -17,6 +18,7 @@ import {
 } from '../models/planting-activities.model';
 import { Response } from '../models/response.model';
 import { PlantingActivitiesService } from './planting-activities.service';
+import { RequestWithUser } from '~/common/utils';
 
 @Controller('planting-activities')
 export class PlantingActivitiesController {
@@ -38,9 +40,16 @@ export class PlantingActivitiesController {
     };
   }
 
+  @UseGuards(JwtGuard)
   @Get()
-  findAll() {
-    return this.plantingActivitiesService.findAll();
+  async getAll(
+    @Request() req: RequestWithUser,
+  ): Promise<Response<PlantingActivityResponse[]>> {
+    const result = await this.plantingActivitiesService.getAll(req.user);
+    return {
+      message: 'Planting Activities retrieved successfully',
+      data: result,
+    };
   }
 
   @Get(':id')

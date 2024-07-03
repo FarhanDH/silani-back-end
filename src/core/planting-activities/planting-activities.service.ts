@@ -4,14 +4,16 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { eq } from 'drizzle-orm';
+import { DrizzleService } from '~/common/drizzle/drizzle.service';
+import { fields, plantingActivities } from '~/common/drizzle/schema';
+import { AuthJWTPayload } from '../models/auth.model';
 import {
   CreatePlantingActivityRequest,
   PlantingActivityResponse,
   UpdatePlantingActivityRequest,
   toPlantingActivityResponse,
 } from '../models/planting-activities.model';
-import { DrizzleService } from '~/common/drizzle/drizzle.service';
-import { plantingActivities } from '~/common/drizzle/schema';
 
 @Injectable()
 export class PlantingActivitiesService {
@@ -65,8 +67,25 @@ export class PlantingActivitiesService {
     }
   }
 
-  findAll() {
-    return `This action returns all plantingActivities`;
+  async getAll(user: AuthJWTPayload): Promise<PlantingActivityResponse[]> {
+    this.logger.debug(
+      `FieldPestsService.getAll(), user: ${JSON.stringify(user)}`,
+    );
+
+    try {
+      const result = await this.drizzleService.db
+        .select()
+        .from(plantingActivities)
+        .leftJoin(fields, eq(plantingActivities.fieldId, fields.id))
+        .where(eq(fields.userId, user.user_uuid));
+
+      return result.map((el) =>
+        toPlantingActivityResponse(el.planting_activities),
+      );
+    } catch (error) {
+      this.logger.error(`PlantingActivitiesService.getAll(): ${error}`);
+      throw new HttpException(error, 500);
+    }
   }
 
   findOne(id: number) {
