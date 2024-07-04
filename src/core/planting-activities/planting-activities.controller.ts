@@ -105,8 +105,27 @@ export class PlantingActivitiesController {
     };
   }
 
+  @UseGuards(JwtGuard, PlantingActivityOwnerGuard)
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.plantingActivitiesService.remove(+id);
+  async deleteById(
+    @Param(
+      'id',
+      new ParseUUIDPipe({
+        exceptionFactory: () => {
+          throw new NotAcceptableException('Params must be a valid UUID');
+        },
+      }),
+    )
+    id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<Response<PlantingActivityResponse>> {
+    const result = await this.plantingActivitiesService.deleteById(
+      id,
+      req.user,
+    );
+    return {
+      message: 'Planting Activity deleted successfully',
+      data: result,
+    };
   }
 }

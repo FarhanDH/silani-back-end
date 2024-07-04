@@ -142,8 +142,24 @@ export class PlantingActivitiesService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} plantingActivity`;
+  async deleteById(
+    id: string,
+    user: AuthJWTPayload,
+  ): Promise<PlantingActivityResponse> {
+    this.logger.debug(
+      `PlantingActivitiesService.deleteById(plantingActivityId${id}), user: ${JSON.stringify(user)}`,
+    );
+    await this.checkById(id, user.user_uuid);
+    try {
+      const [result] = await this.drizzleService.db
+        .delete(plantingActivities)
+        .where(eq(plantingActivities.id, id))
+        .returning();
+      return toPlantingActivityResponse(result);
+    } catch (error) {
+      this.logger.error(`PlantingActivitiesService.deleteById(): ${error}`);
+      throw new HttpException(error, 500);
+    }
   }
 
   /**
