@@ -3,7 +3,9 @@ import {
   Controller,
   Delete,
   Get,
+  NotAcceptableException,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Request,
@@ -19,6 +21,7 @@ import {
 import { Response } from '../models/response.model';
 import { PlantingActivitiesService } from './planting-activities.service';
 import { RequestWithUser } from '~/common/utils';
+import { PlantingActivityOwnerGuard } from './guard/planting-activitiy-owner.guard';
 
 @Controller('planting-activities')
 export class PlantingActivitiesController {
@@ -52,9 +55,28 @@ export class PlantingActivitiesController {
     };
   }
 
+  @UseGuards(JwtGuard, PlantingActivityOwnerGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.plantingActivitiesService.findOne(+id);
+  async getOneById(
+    @Param(
+      'id',
+      new ParseUUIDPipe({
+        exceptionFactory: () => {
+          throw new NotAcceptableException('Params must be a valid UUID');
+        },
+      }),
+    )
+    id: string,
+    @Request() req: RequestWithUser,
+  ): Promise<Response<PlantingActivityResponse>> {
+    const result = await this.plantingActivitiesService.getOneById(
+      id,
+      req.user,
+    );
+    return {
+      message: 'Planting Activity retrieved successfully',
+      data: result,
+    };
   }
 
   @Patch(':id')

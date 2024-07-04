@@ -3,10 +3,15 @@ import {
   HttpException,
   Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { DrizzleService } from '~/common/drizzle/drizzle.service';
-import { fields, plantingActivities } from '~/common/drizzle/schema';
+import {
+  fields,
+  plantingActivities,
+  PlantingActivity,
+} from '~/common/drizzle/schema';
 import { AuthJWTPayload } from '../models/auth.model';
 import {
   CreatePlantingActivityRequest,
@@ -94,8 +99,21 @@ export class PlantingActivitiesService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} plantingActivity`;
+  async getOneById(
+    id: string,
+    user: AuthJWTPayload,
+  ): Promise<PlantingActivityResponse> {
+    this.logger.debug(
+      `PlantingActivitiesService.getOneById(${id}), user: ${JSON.stringify(user)}`,
+    );
+
+    try {
+      const result = await this.checkById(id, user.user_uuid);
+      return toPlantingActivityResponse(result);
+    } catch (error) {
+      this.logger.error(`PlantingActivitiesService.getOneById(): ${error}`);
+      throw new HttpException(error, 500);
+    }
   }
 
   update(
@@ -107,5 +125,49 @@ export class PlantingActivitiesService {
 
   remove(id: number) {
     return `This action removes a #${id} plantingActivity`;
+  }
+
+  async checkById(
+    plantingActivityId: string,
+    userId: string,
+  ): Promise<PlantingActivity> {
+    const result = await this.drizzleService.db
+      .select()
+      .from(plantingActivities)
+      .leftJoin(fields, eq(plantingActivities.fieldId, fields.id))
+      .where(
+        and(
+          eq(fields.userId, userId),
+          eq(plantingActivities.id, plantingActivityId),
+        ),
+      );
+
+    if (result.length == 0) {
+      this.logger.error(
+        `PlantingActivitiesService.checkById(${plantingActivityId}), user: ${userId}`,
+      );
+      throw new NotFoundException(
+        `FieldPest with id ${plantingActivityId} not found`,
+      );
+    }
+    return result[0].planting_activities;
+  }
+
+  async isOwner(plantingActivityId: string, userId: string): Promise<boolean> {
+    const result = await this.drizzleService.db
+      .select()
+      .from(plantingActivities)
+      .leftJoin(fields, eq(plantingActivities.fieldId, fields.id))
+      .where(
+        and(
+          eq(fields.userId, userId),
+          eq(plantingActivities.id, plantingActivityId),
+        ),
+      );
+
+    return (
+      result.map((el) => toPlantingActivityResponse(el.planting_activities))
+        .length > 0
+    );
   }
 }
