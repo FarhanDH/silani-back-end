@@ -6,11 +6,12 @@ import {
   NotAcceptableException,
   Param,
   ParseUUIDPipe,
-  Patch,
   Post,
+  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { RequestWithUser } from '~/common/utils';
 import { JwtGuard } from '../auth/guard/jwt.guard';
 import { FieldOwnerGuard } from '../fields/guard/field-owner.guard';
 import {
@@ -19,9 +20,8 @@ import {
   UpdatePlantingActivityRequest,
 } from '../models/planting-activities.model';
 import { Response } from '../models/response.model';
-import { PlantingActivitiesService } from './planting-activities.service';
-import { RequestWithUser } from '~/common/utils';
 import { PlantingActivityOwnerGuard } from './guard/planting-activitiy-owner.guard';
+import { PlantingActivitiesService } from './planting-activities.service';
 
 @Controller('planting-activities')
 export class PlantingActivitiesController {
@@ -79,15 +79,30 @@ export class PlantingActivitiesController {
     };
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
+  @UseGuards(JwtGuard, PlantingActivityOwnerGuard)
+  @Put(':id')
+  async updateById(
+    @Param(
+      'id',
+      new ParseUUIDPipe({
+        exceptionFactory: () => {
+          throw new NotAcceptableException('Params must be a valid UUID');
+        },
+      }),
+    )
+    id: string,
+    @Request() req: RequestWithUser,
     @Body() updatePlantingActivityRequest: UpdatePlantingActivityRequest,
-  ) {
-    return this.plantingActivitiesService.update(
-      +id,
+  ): Promise<Response<PlantingActivityResponse>> {
+    const result = await this.plantingActivitiesService.updateById(
+      id,
+      req.user,
       updatePlantingActivityRequest,
     );
+    return {
+      message: 'Planting Activity updated successfully',
+      data: result,
+    };
   }
 
   @Delete(':id')

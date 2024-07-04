@@ -39,7 +39,8 @@ export class PlantingActivityResponse {
   fieldId: string;
   plantId: string;
   harvestEstimateDate: Date;
-  plantedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
   harvestAmount: number | null;
   harvestedAt: Date | null;
 }
@@ -52,7 +53,8 @@ export const toPlantingActivityResponse = (
     fieldId: plantingActivity.fieldId,
     plantId: plantingActivity.plantId,
     harvestEstimateDate: plantingActivity.harvestEstimateDate,
-    plantedAt: plantingActivity.plantedAt,
+    createdAt: plantingActivity.createdAt,
+    updatedAt: plantingActivity.updatedAt,
     harvestAmount: plantingActivity.harvestAmount,
     harvestedAt: plantingActivity.harvestedAt,
   };

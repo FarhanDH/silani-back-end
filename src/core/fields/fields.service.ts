@@ -214,6 +214,9 @@ export class FieldsService {
   }
 
   async isOwner(fieldId: string, userId: string): Promise<boolean> {
+    this.logger.debug(
+      `FieldsService.isOwner(fieldId: ${fieldId}, userId: ${userId})`,
+    );
     // is id is correct pattern
     Validation.uuid(fieldId);
 

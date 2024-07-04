@@ -1,0 +1,2 @@
+ALTER TABLE "planting_activities" ALTER COLUMN "harvest_amount" SET DATA TYPE bigint;--> statement-breakpoint
+ALTER TABLE "planting_activities" ADD COLUMN "cupdated_at" timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL;

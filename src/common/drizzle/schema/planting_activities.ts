@@ -15,7 +15,10 @@ export const plantingActivities = pgTable('planting_activities', {
   harvestEstimateDate: timestamp('harvest_estimate_date')
     .default(sql`CURRENT_TIMESTAMP + INTERVAL '3 MONTHS'`)
     .notNull(),
-  plantedAt: timestamp('created_at')
+  createdAt: timestamp('created_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updated_at')
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
   harvestAmount: bigint('harvest_amount', { mode: 'number' }),

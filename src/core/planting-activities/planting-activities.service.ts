@@ -116,15 +116,82 @@ export class PlantingActivitiesService {
     }
   }
 
-  update(
-    id: number,
+  async updateById(
+    id: string,
+    user: AuthJWTPayload,
     updatePlantingActivityRequest: UpdatePlantingActivityRequest,
   ) {
-    return `This action updates a #${id} plantingActivity`;
+    this.logger.debug(
+      `PlantingActivitiesService.updateById(plantingActivityId: ${id}), user: ${JSON.stringify(user)}, updatePlantingActivityRequest: ${JSON.stringify(updatePlantingActivityRequest)}`,
+    );
+    const existingPlantingActivity = await this.checkById(id, user.user_uuid);
+    try {
+      const validatedRequest = this.validatePlantingActivityRequest({
+        ...existingPlantingActivity,
+        ...updatePlantingActivityRequest,
+      });
+      const [result] = await this.drizzleService.db
+        .update(plantingActivities)
+        .set({ ...validatedRequest, updatedAt: new Date() })
+        .where(eq(plantingActivities.id, id))
+        .returning();
+      return toPlantingActivityResponse(result);
+    } catch (error) {
+      this.logger.error(`PlantingActivitiesService.updateById(): ${error}`);
+      throw new HttpException(error, 500);
+    }
   }
 
   remove(id: number) {
     return `This action removes a #${id} plantingActivity`;
+  }
+
+  /**
+   * Validates the provided PlantingActivity object, ensuring that the harvestEstimateDate and harvestedAt properties are valid.
+   *
+   * @param plantingActivity - The PlantingActivity object to validate.
+   * @returns The validated PlantingActivity object.
+   * @throws BadRequestException if the harvestEstimateDate or harvestedAt properties are less than the current date.
+   */
+  validatePlantingActivityRequest(
+    plantingActivity: PlantingActivity,
+  ): PlantingActivity {
+    this.logger.debug(
+      `PlantingActivitiesService.validatePlantingActivityRequest(${JSON.stringify(
+        plantingActivity,
+      )})`,
+    );
+    if (plantingActivity.harvestEstimateDate || plantingActivity.harvestedAt) {
+      plantingActivity.harvestEstimateDate = new Date(
+        plantingActivity.harvestEstimateDate,
+      );
+      plantingActivity.harvestedAt = plantingActivity.harvestedAt
+        ? new Date(plantingActivity.harvestedAt)
+        : null;
+
+      // check harvestEstimateDate and harvestedAt must be greater than or equal to today
+      if (
+        plantingActivity.harvestEstimateDate &&
+        plantingActivity.harvestEstimateDate < new Date()
+      ) {
+        this.logger.error(
+          'harvestEstimateDate must be greater than or equal to today',
+        );
+        throw new BadRequestException(
+          'harvestEstimateDate must be greater than or equal to today',
+        );
+      }
+      if (
+        plantingActivity.harvestedAt &&
+        plantingActivity.harvestedAt < new Date()
+      ) {
+        this.logger.error('harvestedAt must be greater than or equal to today');
+        throw new BadRequestException(
+          'harvestedAt must be greater than or equal to today',
+        );
+      }
+    }
+    return plantingActivity;
   }
 
   async checkById(
@@ -147,13 +214,16 @@ export class PlantingActivitiesService {
         `PlantingActivitiesService.checkById(${plantingActivityId}), user: ${userId}`,
       );
       throw new NotFoundException(
-        `FieldPest with id ${plantingActivityId} not found`,
+        `Planting Activity with id ${plantingActivityId} not found`,
       );
     }
     return result[0].planting_activities;
   }
 
   async isOwner(plantingActivityId: string, userId: string): Promise<boolean> {
+    this.logger.debug(
+      `PlantingActivitiesService.isOwner(${plantingActivityId}, ${userId})`,
+    );
     const result = await this.drizzleService.db
       .select()
       .from(plantingActivities)
