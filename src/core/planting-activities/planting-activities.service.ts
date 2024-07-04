@@ -229,7 +229,24 @@ export class PlantingActivitiesService {
     this.logger.debug(
       `PlantingActivitiesService.isOwner(${plantingActivityId}, ${userId})`,
     );
-    const result = await this.drizzleService.db
+
+    // check is plantingActivity exists by id
+    const [plantingActivity] = await this.drizzleService.db
+      .select()
+      .from(plantingActivities)
+      .where(eq(plantingActivities.id, plantingActivityId));
+
+    if (!plantingActivity) {
+      this.logger.error(
+        `Planting Activity with id ${plantingActivityId} not found`,
+      );
+      throw new NotFoundException(
+        `Planting Activity with id ${plantingActivityId} not found`,
+      );
+    }
+
+    // check if the user is the owner of the planting activity
+    const isOwnerOfThePlantingActivity = await this.drizzleService.db
       .select()
       .from(plantingActivities)
       .leftJoin(fields, eq(plantingActivities.fieldId, fields.id))
@@ -241,8 +258,9 @@ export class PlantingActivitiesService {
       );
 
     return (
-      result.map((el) => toPlantingActivityResponse(el.planting_activities))
-        .length > 0
+      isOwnerOfThePlantingActivity.map((el) =>
+        toPlantingActivityResponse(el.planting_activities),
+      ).length > 0
     );
   }
 }
