@@ -21,6 +21,9 @@ import {
 } from '../models/planting-activities.model';
 
 @Injectable()
+/**
+ * Provides a service for managing planting activities, including creating, retrieving, updating, and deleting planting activities.
+ */
 export class PlantingActivitiesService {
   constructor(private readonly drizzleService: DrizzleService) {}
   private readonly logger: Logger = new Logger(PlantingActivitiesService.name);
@@ -33,41 +36,15 @@ export class PlantingActivitiesService {
     );
 
     // check is harvestEstimateDate and harvestedAt exists and if so, convert to Date object
-    if (
-      createPlantingActivityRequest.harvestEstimateDate ||
-      createPlantingActivityRequest.harvestedAt
-    ) {
-      createPlantingActivityRequest.harvestEstimateDate = new Date(
-        createPlantingActivityRequest.harvestEstimateDate,
-      );
-      createPlantingActivityRequest.harvestedAt = new Date(
-        createPlantingActivityRequest.harvestedAt,
-      );
-
-      // check harvestEstimateDate and harvestedAt must be greater than or equal to today
-      if (createPlantingActivityRequest.harvestEstimateDate < new Date()) {
-        this.logger.error(
-          'harvestEstimateDate must be greater than or equal to today',
-        );
-        throw new BadRequestException(
-          'harvestEstimateDate must be greater than or equal to today',
-        );
-      }
-      if (createPlantingActivityRequest.harvestedAt < new Date()) {
-        this.logger.error(
-          'harvestEstimateDate must be greater than or equal to today',
-        );
-        throw new BadRequestException(
-          'harvestedAt must be greater than or equal to today',
-        );
-      }
-    }
+    const validatedRequest = this.validatePlantingActivityRequest({
+      ...createPlantingActivityRequest,
+    });
 
     try {
       const [plantingActivity] = await this.drizzleService.db
         .insert(plantingActivities)
         .values({
-          ...createPlantingActivityRequest,
+          ...validatedRequest,
         })
         .returning();
 
@@ -126,6 +103,7 @@ export class PlantingActivitiesService {
     );
     const existingPlantingActivity = await this.checkById(id, user.user_uuid);
     try {
+      // check is harvestEstimateDate and harvestedAt exists and if so, convert to Date object
       const validatedRequest = this.validatePlantingActivityRequest({
         ...existingPlantingActivity,
         ...updatePlantingActivityRequest,
@@ -163,15 +141,26 @@ export class PlantingActivitiesService {
   }
 
   /**
-   * Validates the provided PlantingActivity object, ensuring that the harvestEstimateDate and harvestedAt properties are valid.
+   * Validates a PlantingActivity object, ensuring that the harvestEstimateDate and harvestedAt properties are valid.
    *
-   * @param plantingActivity - The PlantingActivity object to validate.
-   * @returns The validated PlantingActivity object.
+   * @param plantingActivity - The PlantingActivity object to validate, which may or may not have id and createdAt properties.
+   * @returns The validated PlantingActivity object, with the harvestEstimateDate and harvestedAt properties converted to Date objects if necessary.
    * @throws BadRequestException if the harvestEstimateDate or harvestedAt properties are less than the current date.
    */
   validatePlantingActivityRequest(
-    plantingActivity: PlantingActivity,
-  ): PlantingActivity {
+    plantingActivity: Omit<
+      PlantingActivity,
+      'id' | 'createdAt' | 'updatedAt'
+    > & {
+      id?: string;
+      createdAt?: Date;
+      updatedAt?: Date;
+    },
+  ): Omit<PlantingActivity, 'id' | 'createdAt' | 'updatedAt'> & {
+    id?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+  } {
     this.logger.debug(
       `PlantingActivitiesService.validatePlantingActivityRequest(${JSON.stringify(
         plantingActivity,
