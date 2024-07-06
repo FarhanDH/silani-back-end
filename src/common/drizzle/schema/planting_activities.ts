@@ -1,6 +1,6 @@
 import { relations, sql } from 'drizzle-orm';
 import { bigint, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { fields, plants } from './index';
+import { fields, plants, reminders } from './index';
 
 export const plantingActivities = pgTable('planting_activities', {
   id: uuid('id')
@@ -29,7 +29,7 @@ export type PlantingActivity = typeof plantingActivities.$inferSelect;
 
 export const plantingActivitiesRelations = relations(
   plantingActivities,
-  ({ one }) => ({
+  ({ one, many }) => ({
     field: one(fields, {
       fields: [plantingActivities.fieldId],
       references: [fields.id],
@@ -38,5 +38,6 @@ export const plantingActivitiesRelations = relations(
       fields: [plantingActivities.plantId],
       references: [plants.id],
     }),
+    reminder: many(reminders),
   }),
 );

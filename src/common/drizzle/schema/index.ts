@@ -7,3 +7,4 @@ export * from './plants';
 export * from './fields';
 export * from './field_pests';
 export * from './planting_activities';
+export * from './reminders';

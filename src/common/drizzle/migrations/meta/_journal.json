@@ -127,6 +127,13 @@
       "when": 1720073814806,
       "tag": "0017_wooden_tattoo",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "6",
+      "when": 1720243666835,
+      "tag": "0018_late_blacklash",
+      "breakpoints": true
     }
   ]
 }
