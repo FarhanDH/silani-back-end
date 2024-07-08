@@ -54,8 +54,10 @@ export class RemindersController {
     };
   }
 
+  @UseGuards(JwtGuard, ReminderOwnerGuard)
   @Get(':id')
-  findOne(
+  async getOnById(
+    @Request() req: RequestWithUser,
     @Param(
       'id',
       new ParseUUIDPipe({
@@ -65,8 +67,12 @@ export class RemindersController {
       }),
     )
     id: string,
-  ) {
-    return this.remindersService.getOneById(id);
+  ): Promise<Response<ReminderResponse>> {
+    const result = await this.remindersService.getOneById(req.user, id);
+    return {
+      message: 'Reminder retrieved successfully',
+      data: result,
+    };
   }
 
   @Patch(':id')

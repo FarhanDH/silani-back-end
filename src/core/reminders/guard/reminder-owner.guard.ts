@@ -7,11 +7,13 @@ import {
 } from '@nestjs/common';
 import { RequestWithUser } from '~/common/utils';
 import { PlantingActivitiesService } from '~/core/planting-activities/planting-activities.service';
+import { RemindersService } from '../reminders.service';
 
 @Injectable()
 export class ReminderOwnerGuard implements CanActivate {
   constructor(
     private readonly plantingActivitiesService: PlantingActivitiesService,
+    private readonly remindersService: RemindersService,
   ) {}
   private readonly logger: Logger = new Logger(ReminderOwnerGuard.name);
 
@@ -24,6 +26,21 @@ export class ReminderOwnerGuard implements CanActivate {
     const request: RequestWithUser = context.switchToHttp().getRequest();
     const requestingUserid = request.user.user_uuid;
     const requestPlantingActivityId = request.body.plantingActivityId;
+    const requestReminderId = request.params.id;
+
+    if (requestReminderId) {
+      const isReminderOwner = await this.remindersService.isOwner(
+        requestReminderId,
+        requestingUserid,
+      );
+      if (!isReminderOwner) {
+        this.logger.error('You are not the owner of this reminder !');
+        throw new ForbiddenException(
+          'You are not the owner of this reminder !',
+        );
+      }
+      return true;
+    }
 
     const isPlantingActivityExist =
       await this.plantingActivitiesService.isOwner(
