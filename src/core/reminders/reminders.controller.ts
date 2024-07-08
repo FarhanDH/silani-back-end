@@ -19,14 +19,13 @@ import {
   UpdateReminderRequest,
 } from '../models/reminder.model';
 import { Response } from '../models/response.model';
-import { ReminderOwnerGuard } from './guard/reminder-owner.guard';
 import { RemindersService } from './reminders.service';
 
 @Controller('reminders')
 export class RemindersController {
   constructor(private readonly remindersService: RemindersService) {}
 
-  @UseGuards(JwtGuard, ReminderOwnerGuard)
+  @UseGuards(JwtGuard)
   @Post('')
   async create(
     @Request() req: RequestWithUser,
@@ -54,8 +53,8 @@ export class RemindersController {
     };
   }
 
-  @UseGuards(JwtGuard, ReminderOwnerGuard)
-  // @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard, ReminderOwnerGuard)
+  @UseGuards(JwtGuard)
   @Get(':id')
   async getOnById(
     @Request() req: RequestWithUser,
@@ -76,7 +75,7 @@ export class RemindersController {
     };
   }
 
-  @UseGuards(JwtGuard, ReminderOwnerGuard)
+  @UseGuards(JwtGuard)
   @Put(':id')
   async updateById(
     @Request() req: RequestWithUser,
@@ -102,7 +101,7 @@ export class RemindersController {
     };
   }
 
-  @UseGuards(JwtGuard, ReminderOwnerGuard)
+  @UseGuards(JwtGuard)
   @Delete(':id')
   async deleteById(
     @Request() req: RequestWithUser,

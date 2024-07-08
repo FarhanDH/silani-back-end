@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpException,
   Injectable,
   Logger,
@@ -19,10 +20,14 @@ import {
   toReminderResponse,
   UpdateReminderRequest,
 } from '../models/reminder.model';
+import { PlantingActivitiesService } from '../planting-activities/planting-activities.service';
 
 @Injectable()
 export class RemindersService {
-  constructor(private readonly drizzleService: DrizzleService) {}
+  constructor(
+    private readonly drizzleService: DrizzleService,
+    private readonly plantingActivitiesService: PlantingActivitiesService,
+  ) {}
   private readonly logger: Logger = new Logger(RemindersService.name);
 
   async create(
@@ -36,6 +41,17 @@ export class RemindersService {
       createReminderRequest.dateRemind,
     );
 
+    // is planting activity exists and is owned by the user
+    const isOwnerOfThePlantingActivity =
+      await this.plantingActivitiesService.isOwner(
+        createReminderRequest.plantingActivityId,
+        user.user_uuid,
+      );
+    if (!isOwnerOfThePlantingActivity) {
+      throw new ForbiddenException(
+        'You are not the owner of this planting activity !',
+      );
+    }
     try {
       const [createdReminder] = await this.drizzleService.db
         .insert(reminders)
@@ -77,10 +93,11 @@ export class RemindersService {
     this.logger.debug(
       `RemindersService.getOneById(\nReminder Id: ${id}),\nUser: ${JSON.stringify(user)}`,
     );
-    const result = await this.checkById(id, user.user_uuid);
+    const isReminderExistById = await this.checkById(id);
+    await this.isOwner(id, user.user_uuid); // is reminder owner
     try {
       // const isReminderOwner = await this.
-      return toReminderResponse(result);
+      return toReminderResponse(isReminderExistById);
     } catch (error) {
       this.logger.error(`RemindersService.getOneById(): ${error}`);
       throw new HttpException(error, 500);
@@ -101,8 +118,21 @@ export class RemindersService {
         updateReminderRequest.dateRemind,
       );
     }
+    await this.checkById(id); // is reminder exist
+    await this.isOwner(id, user.user_uuid); // is reminder owner
+    if (updateReminderRequest.plantingActivityId) {
+      const isOwnerOfThePlantingActivity =
+        await this.plantingActivitiesService.isOwner(
+          updateReminderRequest.plantingActivityId,
+          user.user_uuid,
+        );
+      if (!isOwnerOfThePlantingActivity) {
+        throw new ForbiddenException(
+          'You are not the owner of this planting activity !',
+        );
+      }
+    }
     try {
-      await this.checkById(id, user.user_uuid);
       const [updatedReminder] = await this.drizzleService.db
         .update(reminders)
         .set({
@@ -124,8 +154,9 @@ export class RemindersService {
     this.logger.debug(
       `RemindersService.deleteById(\nReminder Id: ${id},\nUser: ${JSON.stringify(user)})\n`,
     );
+    await this.checkById(id);
+    await this.isOwner(id, user.user_uuid); // is reminder owner
     try {
-      await this.checkById(id, user.user_uuid);
       const [deletedReminder] = await this.drizzleService.db
         .delete(reminders)
         .where(eq(reminders.id, id))
@@ -137,24 +168,17 @@ export class RemindersService {
     }
   }
 
-  async checkById(reminderId: string, userId: string): Promise<Reminder> {
-    const result = await this.drizzleService.db
+  async checkById(reminderId: string): Promise<Reminder> {
+    const [result] = await this.drizzleService.db
       .select()
       .from(reminders)
-      .leftJoin(
-        plantingActivities,
-        eq(reminders.plantingActivityId, plantingActivities.id),
-      )
-      .leftJoin(fields, eq(plantingActivities.fieldId, fields.id))
-      .where(and(eq(fields.userId, userId), eq(reminders.id, reminderId)));
+      .where(eq(reminders.id, reminderId));
 
-    if (result.length == 0) {
-      this.logger.error(
-        `RemindersService.checkById(${reminderId}), user: ${userId}`,
-      );
+    if (!result) {
+      this.logger.error(`Reminder with id ${reminderId} not found`);
       throw new NotFoundException(`Reminder with id ${reminderId} not found`);
     }
-    return result[0].reminders;
+    return result;
   }
 
   async isOwner(reminderId: string, userId: string): Promise<boolean> {
@@ -167,6 +191,11 @@ export class RemindersService {
       )
       .leftJoin(fields, eq(plantingActivities.fieldId, fields.id))
       .where(and(eq(fields.userId, userId), eq(reminders.id, reminderId)));
+
+    if (result.length == 0) {
+      this.logger.error(`Your are not the owner of this reminder !`);
+      throw new ForbiddenException(`Your are not the owner of this reminder !`);
+    }
 
     return result.length > 0;
   }
