@@ -28,6 +28,30 @@ export class ReminderOwnerGuard implements CanActivate {
     const requestPlantingActivityId = request.body.plantingActivityId;
     const requestReminderId = request.params.id;
 
+    if (requestReminderId && requestPlantingActivityId) {
+      const isReminderOwner = await Promise.all([
+        this.remindersService.isOwner(requestReminderId, requestingUserid),
+        this.plantingActivitiesService.isOwner(
+          requestPlantingActivityId,
+          requestingUserid,
+        ),
+      ]);
+
+      if (!isReminderOwner[0]) {
+        this.logger.error('You are not the owner of this reminder !');
+        throw new ForbiddenException(
+          'You are not the owner of this reminder !',
+        );
+      }
+      if (!isReminderOwner[1]) {
+        this.logger.error('You are not the owner of this planting activity !');
+        throw new ForbiddenException(
+          'You are not the owner of this planting activity !',
+        );
+      }
+      return true;
+    }
+
     if (requestReminderId) {
       const isReminderOwner = await this.remindersService.isOwner(
         requestReminderId,

@@ -6,11 +6,12 @@ import {
   NotAcceptableException,
   Param,
   ParseUUIDPipe,
-  Patch,
   Post,
+  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { RequestWithUser } from '~/common/utils';
 import { JwtGuard } from '../auth/guard/jwt.guard';
 import {
   CreateReminderRequest,
@@ -20,7 +21,6 @@ import {
 import { Response } from '../models/response.model';
 import { ReminderOwnerGuard } from './guard/reminder-owner.guard';
 import { RemindersService } from './reminders.service';
-import { RequestWithUser } from '~/common/utils';
 
 @Controller('reminders')
 export class RemindersController {
@@ -75,8 +75,10 @@ export class RemindersController {
     };
   }
 
-  @Patch(':id')
-  update(
+  @UseGuards(JwtGuard, ReminderOwnerGuard)
+  @Put(':id')
+  async updateById(
+    @Request() req: RequestWithUser,
     @Param(
       'id',
       new ParseUUIDPipe({
@@ -87,8 +89,16 @@ export class RemindersController {
     )
     id: string,
     @Body() updateReminderRequest: UpdateReminderRequest,
-  ) {
-    return this.remindersService.updateById(id, updateReminderRequest);
+  ): Promise<Response<ReminderResponse>> {
+    const result = await this.remindersService.updateById(
+      req.user,
+      id,
+      updateReminderRequest,
+    );
+    return {
+      message: 'Reminder updated successfully',
+      data: result,
+    };
   }
 
   @Delete(':id')

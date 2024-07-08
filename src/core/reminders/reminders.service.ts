@@ -75,7 +75,7 @@ export class RemindersService {
 
   async getOneById(user: AuthJWTPayload, id: string) {
     this.logger.debug(
-      `RemindersService.getOneById(${id}), User: ${JSON.stringify(user)}`,
+      `RemindersService.getOneById(\nReminder Id: ${id}),\nUser: ${JSON.stringify(user)}`,
     );
     try {
       const result = await this.checkById(id, user.user_uuid);
@@ -86,8 +86,34 @@ export class RemindersService {
     }
   }
 
-  updateById(id: string, updateReminderRequest: UpdateReminderRequest) {
-    return `This action updates a #${id} reminder`;
+  async updateById(
+    user: AuthJWTPayload,
+    id: string,
+    updateReminderRequest: UpdateReminderRequest,
+  ): Promise<ReminderResponse> {
+    this.logger.debug(
+      `RemindersService.updateById(\nReminder Id: ${id},\nUser: ${JSON.stringify(user)},\nupdateReminderRequest: ${JSON.stringify(updateReminderRequest)}\n)`,
+    );
+
+    if (updateReminderRequest.dateRemind) {
+      updateReminderRequest.dateRemind = new Date(
+        updateReminderRequest.dateRemind,
+      );
+    }
+    try {
+      await this.checkById(id, user.user_uuid);
+      const [updatedReminder] = await this.drizzleService.db
+        .update(reminders)
+        .set({
+          ...updateReminderRequest,
+        })
+        .where(eq(reminders.id, id))
+        .returning();
+      return toReminderResponse(updatedReminder);
+    } catch (error) {
+      this.logger.error(`RemindersService.updateById(): ${error}`);
+      throw new HttpException(error, 500);
+    }
   }
 
   deleteById(id: string) {
