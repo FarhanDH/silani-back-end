@@ -55,6 +55,7 @@ export class RemindersController {
   }
 
   @UseGuards(JwtGuard, ReminderOwnerGuard)
+  // @UseGuards(JwtGuard)
   @Get(':id')
   async getOnById(
     @Request() req: RequestWithUser,
@@ -101,8 +102,10 @@ export class RemindersController {
     };
   }
 
+  @UseGuards(JwtGuard, ReminderOwnerGuard)
   @Delete(':id')
-  remove(
+  async deleteById(
+    @Request() req: RequestWithUser,
     @Param(
       'id',
       new ParseUUIDPipe({
@@ -112,7 +115,11 @@ export class RemindersController {
       }),
     )
     id: string,
-  ) {
-    return this.remindersService.deleteById(id);
+  ): Promise<Response<ReminderResponse>> {
+    const result = await this.remindersService.deleteById(req.user, id);
+    return {
+      message: 'Reminder deleted successfully',
+      data: result,
+    };
   }
 }

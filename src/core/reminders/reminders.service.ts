@@ -77,8 +77,9 @@ export class RemindersService {
     this.logger.debug(
       `RemindersService.getOneById(\nReminder Id: ${id}),\nUser: ${JSON.stringify(user)}`,
     );
+    const result = await this.checkById(id, user.user_uuid);
     try {
-      const result = await this.checkById(id, user.user_uuid);
+      // const isReminderOwner = await this.
       return toReminderResponse(result);
     } catch (error) {
       this.logger.error(`RemindersService.getOneById(): ${error}`);
@@ -116,8 +117,24 @@ export class RemindersService {
     }
   }
 
-  deleteById(id: string) {
-    return `This action removes a #${id} reminder`;
+  async deleteById(
+    user: AuthJWTPayload,
+    id: string,
+  ): Promise<ReminderResponse> {
+    this.logger.debug(
+      `RemindersService.deleteById(\nReminder Id: ${id},\nUser: ${JSON.stringify(user)})\n`,
+    );
+    try {
+      await this.checkById(id, user.user_uuid);
+      const [deletedReminder] = await this.drizzleService.db
+        .delete(reminders)
+        .where(eq(reminders.id, id))
+        .returning();
+      return toReminderResponse(deletedReminder);
+    } catch (error) {
+      this.logger.error(`RemindersService.deleteById(): ${error}`);
+      throw new HttpException(error, 500);
+    }
   }
 
   async checkById(reminderId: string, userId: string): Promise<Reminder> {
