@@ -6,39 +6,24 @@ import {
   Logger,
 } from '@nestjs/common';
 import { RequestWithUser } from '~/common/utils';
-import { PlantingActivitiesService } from '../planting-activities.service';
-import { FieldsService } from '~/core/fields/fields.service';
+import { PlantingActivitiesService } from '~/core/planting-activities/planting-activities.service';
 
 @Injectable()
-export class PlantingActivityOwnerGuard implements CanActivate {
+export class ReminderOwnerGuard implements CanActivate {
   constructor(
     private readonly plantingActivitiesService: PlantingActivitiesService,
-    private readonly fieldsService: FieldsService,
   ) {}
-  private readonly logger: Logger = new Logger(PlantingActivityOwnerGuard.name);
+  private readonly logger: Logger = new Logger(ReminderOwnerGuard.name);
 
   /**
-   * Check if the user is the owner of the planting activity.
+   * Check if the user is the owner of the planting activity by body.
    *
    * @return {Promise<boolean>} A promise that resolves to a boolean indicating if the user is the owner of the planting activity.
    */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: RequestWithUser = context.switchToHttp().getRequest();
     const requestingUserid = request.user.user_uuid;
-    const requestPlantingActivityId = request.params.id;
-    const requestFieldId = request.body.fieldId;
-
-    if (requestFieldId) {
-      const isFieldOwner = await this.fieldsService.isOwner(
-        requestFieldId,
-        requestingUserid,
-      );
-      if (!isFieldOwner) {
-        this.logger.error('You are not the owner of this field !');
-        throw new ForbiddenException('You are not the owner of this field !');
-      }
-      return true;
-    }
+    const requestPlantingActivityId = request.body.plantingActivityId;
 
     const isPlantingActivityExist =
       await this.plantingActivitiesService.isOwner(

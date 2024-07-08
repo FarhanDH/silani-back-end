@@ -6,7 +6,7 @@ export const reminders = pgTable('reminders', {
   id: uuid('id')
     .primaryKey()
     .default(sql`gen_random_uuid()`),
-  plantingActivitiesId: uuid('planting_activities_id')
+  plantingActivityId: uuid('planting_activities_id')
     .references(() => plantingActivities.id, { onDelete: 'cascade' })
     .notNull(),
   title: text('title').notNull(),
@@ -19,7 +19,7 @@ export type Reminder = typeof reminders.$inferSelect;
 
 export const remindersRelations = relations(reminders, ({ one }) => ({
   plantingActivity: one(plantingActivities, {
-    fields: [reminders.plantingActivitiesId],
+    fields: [reminders.plantingActivityId],
     references: [plantingActivities.id],
   }),
 }));

@@ -13,6 +13,7 @@ import { PlantsModule } from './core/plants/plants.module';
 import { FieldsModule } from './core/fields/fields.module';
 import { FieldPestsModule } from './core/field-pests/field-pests.module';
 import { PlantingActivitiesModule } from './core/planting-activities/planting-activities.module';
+import { RemindersModule } from './core/reminders/reminders.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { PlantingActivitiesModule } from './core/planting-activities/planting-ac
     FieldsModule,
     FieldPestsModule,
     PlantingActivitiesModule,
+    RemindersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

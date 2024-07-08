@@ -9,5 +9,6 @@ import { FieldsModule } from '../fields/fields.module';
   imports: [DrizzleModule, FieldsModule, UsersModule],
   controllers: [PlantingActivitiesController],
   providers: [PlantingActivitiesService],
+  exports: [PlantingActivitiesService],
 })
 export class PlantingActivitiesModule {}
