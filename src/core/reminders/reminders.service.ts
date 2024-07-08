@@ -1,13 +1,14 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { desc, eq } from 'drizzle-orm';
+import { DrizzleService } from '~/common/drizzle/drizzle.service';
+import { fields, plantingActivities, reminders } from '~/common/drizzle/schema';
+import { AuthJWTPayload } from '../models/auth.model';
 import {
   CreateReminderRequest,
   ReminderResponse,
   toReminderResponse,
   UpdateReminderRequest,
 } from '../models/reminder.model';
-import { DrizzleService } from '~/common/drizzle/drizzle.service';
-import { reminders } from '~/common/drizzle/schema';
-import { AuthJWTPayload } from '../models/auth.model';
 
 @Injectable()
 export class RemindersService {
@@ -40,8 +41,26 @@ export class RemindersService {
     }
   }
 
-  getAll() {
-    return `This action returns all reminders`;
+  async getAll(user: AuthJWTPayload): Promise<ReminderResponse[]> {
+    this.logger.debug(
+      `RemindersService.getAll(\nUser: ${JSON.stringify(user)})`,
+    );
+    try {
+      const result = await this.drizzleService.db
+        .select()
+        .from(reminders)
+        .leftJoin(
+          plantingActivities,
+          eq(reminders.plantingActivityId, plantingActivities.id),
+        )
+        .leftJoin(fields, eq(plantingActivities.fieldId, fields.id))
+        .where(eq(fields.userId, user.user_uuid))
+        .orderBy(desc(reminders.dateRemind));
+      return result.map((el) => toReminderResponse(el.reminders));
+    } catch (error) {
+      this.logger.error(`RemindersService.getAll(): ${error}`);
+      throw new HttpException(error, 500);
+    }
   }
 
   getOneById(id: string) {

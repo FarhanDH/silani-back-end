@@ -42,9 +42,16 @@ export class RemindersController {
     };
   }
 
+  @UseGuards(JwtGuard)
   @Get()
-  findAll() {
-    return this.remindersService.getAll();
+  async getAll(
+    @Request() req: RequestWithUser,
+  ): Promise<Response<ReminderResponse[]>> {
+    const result = await this.remindersService.getAll(req.user);
+    return {
+      message: 'Reminders retrieved successfully',
+      data: result,
+    };
   }
 
   @Get(':id')
